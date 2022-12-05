@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.0;
 
-contract WordGame {
+import '@openzeppelin/contracts/access/Ownable.sol';
+
+contract WordGame is Ownable {
   constructor() public {}
 }
