@@ -3,5 +3,9 @@
 @tailwind utilities;
 
 .btn {
-  @apply rounded-full;
+  @apply rounded-custom;
+}
+
+.rounded-custom {
+  border-radius: 5px;
 }
