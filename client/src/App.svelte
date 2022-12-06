@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { Button } from 'attractions'
+  import MetaMask from './lib/MetaMask.svelte'
 </script>
 
 <main>
-  <Button filled>Start</Button>
+  <MetaMask />
 </main>
-
-<style>
-</style>
