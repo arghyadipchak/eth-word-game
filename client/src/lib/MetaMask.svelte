@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   let currentAddress = ''
   let ethereum = window.ethereum
   let refresh = false

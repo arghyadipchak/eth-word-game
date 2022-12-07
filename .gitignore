@@ -31,3 +31,4 @@ dist-ssr
 
 # misc
 .DS_Store
+build
