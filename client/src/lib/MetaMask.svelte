@@ -86,7 +86,7 @@
       <input
         type="checkbox"
         data-toggle-theme="night,emerald"
-        checked={localStorage.theme === 'emerald'}
+        checked={localStorage.theme === 'night'}
       />
       <svg
         class="swap-on fill-current w-10 h-10"
