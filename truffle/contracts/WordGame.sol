@@ -9,11 +9,12 @@ contract WordGame {
   address[] players;
   string word;
   bool hasStarted;
-  uint turn = 0;
+  uint turn;
 
   constructor() {
     word = 'abdakdabra';
     hasStarted = false;
+    turn = 0;
   }
   function checkIfPlayer(address p) public view returns (bool sufficient)
   {
@@ -63,5 +64,9 @@ contract WordGame {
     }
   }
     return false;
+  }
+  function getState() public view returns(address[] memory, string memory, bool, uint)
+  {
+    return (players,word,hasStarted,turn);
   }
 }
