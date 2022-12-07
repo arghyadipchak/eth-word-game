@@ -1,13 +1,22 @@
 <script>
-  let currentAddress =
-    window.ethereum === undefined ? '' : window.ethereum.selectedAddress
+  let currentAddress = ''
+  let ethereum = window.ethereum
+  let refresh = false
 
-  window.ethereum.on('accountsChanged', function () {
-    currentAddress = window.ethereum.selectedAddress
-  })
+  if (ethereum) {
+    currentAddress = ethereum.selectedAddress
+    ethereum.on(
+      'accountsChanged',
+      () => (currentAddress = ethereum.selectedAddress)
+    )
+  } else {
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && refresh) location.reload()
+    })
+  }
 </script>
 
-{#if window.ethereum === undefined || !window.ethereum.isMetaMask}
+{#if ethereum === undefined || !ethereum.isMetaMask}
   <input
     type="checkbox"
     id="MetaMaskConnect"
@@ -25,6 +34,7 @@
           href="https://metamask.io"
           target="_blank"
           rel="noreferrer"
+          on:click={() => (refresh = true)}
           class="btn bth-primary">Install MetaMask</a
         >
       </div>
