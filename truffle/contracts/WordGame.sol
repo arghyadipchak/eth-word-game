@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0+
 pragma solidity ^0.8.0;
 
+import '@openzeppelin/contracts/access/Ownable.sol';
 import './strings.sol';
 
-contract WordGame {
+contract WordGame is Ownable {
   using strings for *;
   address[] players;
   string word;

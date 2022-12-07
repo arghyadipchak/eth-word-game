@@ -5,6 +5,5 @@
 
 <main>
   <MetaMask />
-  <!-- Fix no metamask install prompt -->
   <StartJoin />
 </main>
