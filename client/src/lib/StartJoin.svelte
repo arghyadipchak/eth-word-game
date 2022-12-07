@@ -34,7 +34,7 @@
     >
       {#if startButton}
         <div>
-          <p class="text-primary text-xl">
+          <p class="text-xl">
             Game Address : <br />
             {startAddress}
           </p>

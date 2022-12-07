@@ -74,9 +74,12 @@
 
   <label class="swap justify-items-end">
     <input type="checkbox" />
-    <p class="swap-on btn m-1">
-      CURRENT: &nbsp <span class="normal-case">{currentAddress}</span>
-    </p>
-    <p class="swap-off fill-current btn m-1">ACCOUNT</p>
+    <div
+      class="swap-on btn-secondary btn-ghost grid grid-cols-1 gap-1 justify-items-start"
+    >
+      <p>CURRENT :<br /></p>
+      <p class="normal-case tracking-wider text-lg">{currentAddress}</p>
+    </div>
+    <p class="swap-off fill-current btn btn-secondary m-1">Account</p>
   </label>
 </div>

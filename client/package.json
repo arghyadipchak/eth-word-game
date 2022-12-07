@@ -23,5 +23,8 @@
     "tslib": "^2.4.0",
     "typescript": "^4.6.4",
     "vite": "^3.2.3"
+  },
+  "dependencies": {
+    "web3": "^1.8.1"
   }
 }
