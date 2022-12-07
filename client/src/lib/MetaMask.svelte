@@ -1,32 +1,13 @@
 <script>
-  import { onMount } from 'svelte'
+  let currentAddress =
+    window.ethereum === undefined ? '' : window.ethereum.selectedAddress
 
-  let MetaMaskConnected = false
-  let WalletConnected
-
-  if (window.ethereum !== undefined) {
-    WalletConnected = window.ethereum.selectedAddress
-  }
-
-  try {
-    onMount(async () => {
-      if (!(window.ethereum === undefined) && window.ethereum.isMetaMask) {
-        MetaMaskConnected = true
-        try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' })
-        } catch (error) {
-          console.log('Refresh page')
-        }
-      }
-    })
-
-    window.ethereum.on('accountsChanged', function () {
-      WalletConnected = true
-    })
-  } catch (error) {}
+  window.ethereum.on('accountsChanged', function () {
+    currentAddress = window.ethereum.selectedAddress
+  })
 </script>
 
-{#if !MetaMaskConnected}
+{#if window.ethereum === undefined || !window.ethereum.isMetaMask}
   <input
     type="checkbox"
     id="MetaMaskConnect"
@@ -49,7 +30,7 @@
       </div>
     </div>
   </div>
-{:else if !WalletConnected}
+{:else if !currentAddress}
   <input
     type="checkbox"
     id="WalletConnect"
@@ -73,3 +54,19 @@
     </div>
   </div>
 {/if}
+
+<div class="navbar bg-base-100">
+  <div class="flex-1">
+    <a class="btn btn-ghost normal-case text-xl text-primary" href="/"
+      >BlockChain Antakshari</a
+    >
+  </div>
+
+  <label class="swap justify-items-end">
+    <input type="checkbox" />
+    <p class="swap-on btn m-1">
+      CURRENT: &nbsp <span class="normal-case">{currentAddress}</span>
+    </p>
+    <p class="swap-off fill-current btn m-1">ACCOUNT</p>
+  </label>
+</div>
