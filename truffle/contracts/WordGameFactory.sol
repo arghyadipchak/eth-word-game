@@ -8,11 +8,12 @@ contract WordGameFactory {
   mapping(address => string) names;
 
   event NameChanged(address user, string name);
+  event NewGame(address game);
 
   function newGame() public returns (address newGameAdd) {
-    WordGame game = new WordGame();
-    newGameAdd = address(game);
+    newGameAdd = address(new WordGame());
     games.push(newGameAdd);
+    emit NewGame(newGameAdd);
   }
 
   function checkGame(address gameAdd) public view returns (bool) {

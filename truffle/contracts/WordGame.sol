@@ -41,6 +41,10 @@ contract WordGame is Ownable {
     return false;
   }
 
+  function gameStarted() public view returns (bool started) {
+    return hasStarted;
+  }
+
   function getWord() public view returns (string memory) {
     return word;
   }
