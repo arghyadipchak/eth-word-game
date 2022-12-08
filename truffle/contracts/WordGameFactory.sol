@@ -11,7 +11,7 @@ contract WordGameFactory {
   event NewGame(address game);
 
   function newGame() public returns (address newGameAdd) {
-    newGameAdd = address(new WordGame());
+    newGameAdd = address(new WordGame(msg.sender));
     games.push(newGameAdd);
     emit NewGame(newGameAdd);
   }

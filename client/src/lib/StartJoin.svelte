@@ -1,29 +1,98 @@
+<!-- 
+TODO
+Add the game page
+connect to the game page
+add waiting screen for players
+add joined players for waiting screen
+Game screen:
+    scrolling words
+    what alphabet to put
+    correct/incorrect?
+    lives?
+    time?
+    challenge time?
+ -->
 <script lang="ts">
-  // let validGame = true
-  // let gameActive = false
-  // let gameStarted = false
+  import { gameAddress, deployerAddress, currentAddress } from './stores'
+  import { ethers } from 'ethers'
+  import Factory from '../../../truffle/build/contracts/WordGameFactory.json'
+  import WordGame from '../../../truffle/build/contracts/WordGame.json'
 
   let joinButton = false
   let startButton = false
+  let createButton = false
+  let joinAsSpec = false
+  let validGameJoined = false
 
   let joinAddress = ''
-  let startAddress = '0xD2E4F96673DE0116FF2fFf80a42e222CD7Ec15B4'
+  let startAddress = ''
+  let temp
+  let flag = false
+
+  let contractAddress
+  deployerAddress.subscribe(value => {
+    contractAddress = value
+  })
+
+  const provider = new ethers.providers.Web3Provider(window.ethereum)
+  const instance = new ethers.Contract(contractAddress, Factory.abi, provider)
+  const signer = provider.getSigner()
 
   function toggleJoin() {
     joinButton = !joinButton
+    joinAsSpec = false
   }
 
   function toggleStart() {
     startButton = !startButton
   }
 
-  function startGame() {
-    //returns a start address
+  async function startGame() {
+    createButton = true
+    const singerinstance = instance.connect(signer)
+    temp = await singerinstance.newGame()
+
+    instance.on('NewGame', (game, event) => {
+      if (event.transactionHash === temp.hash) {
+        startAddress = game
+        gameAddress.update(_ => startAddress)
+      }
+      console.log(game)
+    })
   }
 
-  function joinGame() {
-    // This is a function which first checks if the address is valid
-    // Then goes to the next screen
+  async function stopJoin() {
+    const gameInstance = new ethers.Contract(
+      startAddress,
+      WordGame.abi,
+      provider
+    )
+    const singerGameInstance = gameInstance.connect(signer)
+    temp = await singerGameInstance.startGame()
+  }
+
+  async function joinGame() {
+    const singerinstance = instance.connect(signer)
+    flag = await singerinstance.checkGame(joinAddress)
+    if (flag) {
+      gameAddress.update(_ => joinAddress)
+      const gameInstance = new ethers.Contract(
+        joinAddress,
+        WordGame.abi,
+        provider
+      )
+      const signerGameInstance = gameInstance.connect(signer)
+      const flag2 = await signerGameInstance.gameStarted()
+      validGameJoined = await signerGameInstance.checkIfPlayer($currentAddress)
+
+      if (flag2 && !validGameJoined) {
+        // add check for this
+        joinAsSpec = true
+      } else if (!validGameJoined) {
+        await signerGameInstance.joinGame()
+        validGameJoined = true
+      }
+    }
   }
 </script>
 
@@ -34,14 +103,27 @@
     >
       {#if startButton}
         <div>
-          <p class="text-xl">
-            Game Address : <br />
-            {startAddress}
-          </p>
+          {#if startAddress !== ''}
+            <p class="text-xl">
+              Game Address : <br />
+              {startAddress}
+            </p>
+          {:else if !createButton}
+            <button
+              class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+              on:click={startGame}
+            >
+              Create Game
+            </button>
+          {:else}
+            <button class="btn loading bth-lg btn-primary m-2 h-20 text-xl w-60"
+              >generating game</button
+            >
+          {/if}
         </div>
         <div>
           <button
-            on:click={startGame}
+            on:click={stopJoin}
             class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
           >
             START
@@ -57,18 +139,26 @@
         <div>
           <input
             type="text"
-            value={joinAddress}
+            bind:value={joinAddress}
             placeholder="Enter game address"
             class="input input-lg input-ghost max-w-prose w-[32rem] text-xl"
           />
         </div>
         <div>
-          <button
-            on:click={joinGame}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
-          >
-            JOIN
-          </button>
+          {#if !joinAsSpec}
+            <button
+              on:click={joinGame}
+              class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+            >
+              JOIN
+            </button>
+          {:else}
+            <button
+              on:click={joinGame}
+              class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+              >Join as spectator?
+            </button>
+          {/if}
           <button
             on:click={toggleJoin}
             class="btn btn-ghost btn-primary m-2 h-15 text-lg"

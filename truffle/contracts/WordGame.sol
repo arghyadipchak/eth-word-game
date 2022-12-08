@@ -11,10 +11,17 @@ contract WordGame is Ownable {
   bool hasStarted;
   uint256 turn;
 
-  constructor() {
+  event PlayerJoined(address player);
+
+  constructor(address creator) {
     word = 'abdakdabra';
     hasStarted = false;
     turn = 0;
+    emit PlayerJoined(creator);
+  }
+
+  function playerList() public view returns (address[] memory) {
+    return players;
   }
 
   function checkIfPlayer(address p) public view returns (bool sufficient) {
@@ -29,6 +36,7 @@ contract WordGame is Ownable {
     if (hasStarted) return false; // check if game has already started
 
     players.push(msg.sender);
+    emit PlayerJoined(msg.sender);
     return true;
   }
 
@@ -49,6 +57,8 @@ contract WordGame is Ownable {
     return word;
   }
 
+  event Turn(address player, uint256 turnNumber, string word, bool correct);
+
   function sendWord(string memory newWord) public returns (bool sufficient) {
     if (
       players[turn] == msg.sender
@@ -62,9 +72,11 @@ contract WordGame is Ownable {
         word = newWord;
         turn = turn + 1;
         turn = turn % players.length;
+        emit Turn(msg.sender, turn, newWord, true);
         return true;
       }
     }
+    emit Turn(msg.sender, turn, newWord, true);
     return false;
   }
 
