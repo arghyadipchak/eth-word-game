@@ -74,8 +74,10 @@ Game screen:
   async function joinGame() {
     const singerinstance = instance.connect(signer)
     flag = await singerinstance.checkGame(joinAddress)
+    console.log(flag)
     if (flag) {
       gameAddress.update(_ => joinAddress)
+      console.log($gameAddress)
       const gameInstance = new ethers.Contract(
         joinAddress,
         WordGame.abi,
