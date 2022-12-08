@@ -11,6 +11,10 @@ contract('WordGame: let us play', (acc) => {
     out = await game.methods.getWord().call();
     assert.equal(out, 'abdakdabra','word check failed');
 
+    // test pure function isLastFirstSame
+    assert.equal(await game.methods.isLastFirstSame('air','rice').call(),true,'isLastFirstSame failed');
+    assert.equal(await game.methods.isLastFirstSame('air','like').call(),false,'isLastFirstSame failed');
+    
     //Will start to play a game now
 
     //3 people play a game
