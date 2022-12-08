@@ -10,6 +10,7 @@ contract WordGame {
   string word;
   bool hasStarted;
   uint256 turn;
+  address contractCreator;
 
   event NewPlayer(address player);
 
@@ -18,6 +19,7 @@ contract WordGame {
     hasStarted = false;
     turn = 0;
     players.push(creator);
+    contractCreator = creator;
     // emit NewPlayer(creator);
   }
 
@@ -47,8 +49,8 @@ contract WordGame {
   }
 
   function startGame() public returns (bool sufficient) {
-    //start game only if a player says
-    if (checkIfPlayer(msg.sender)) {
+    //start game only if a player says and s/he is contract creator
+    if (checkIfPlayer(msg.sender) && msg.sender == contractCreator) {
       hasStarted = true;
       return true;
     }
