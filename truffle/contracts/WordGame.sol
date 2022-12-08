@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0+
 pragma solidity ^0.8.0;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
+//import '@openzeppelin/contracts/access/Ownable.sol';
 import './strings.sol';
 
-contract WordGame is Ownable {
+contract WordGame {
   using strings for *;
   address[] players;
   string word;
@@ -38,7 +38,7 @@ contract WordGame is Ownable {
 
   function joinGame() public {
     //check is game already joined
-    if (hasStarted && !checkIfPlayer(msg.sender)) {
+    if (!hasStarted && !checkIfPlayer(msg.sender)) {
       // check if game has already started
 
       players.push(msg.sender);
@@ -85,6 +85,11 @@ contract WordGame is Ownable {
     emit Turn(msg.sender, turn, newWord, true);
     return false;
   }
+
+function getTurn() public view returns(uint256)
+{
+  return turn;
+}
 
   function getState()
     public
