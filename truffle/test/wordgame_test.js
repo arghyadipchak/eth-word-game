@@ -30,7 +30,13 @@ contract('WordGame: let us play', (acc) => {
     
     // acc[1] starts game
     await game.methods.startGame().send({from:acc[1]});
-    assert.equal(await game.methods.gameStarted().call(),true,'acc[1] was NOT able to start game');
+    // he should not be able to start it
+    assert.equal(await game.methods.gameStarted().call(),false,'acc[1] was able to start game');
+
+    // acc[0] (contract creator) starts game
+    await game.methods.startGame().send({from:acc[0]});
+    // he should be able to start it since s/he created a contract
+    assert.equal(await game.methods.gameStarted().call(),true,'acc[0] NOT was able to start game');
     
     // acc[1] tries to send a word
     await game.methods.sendWord('atom').send({from:acc[1]});
