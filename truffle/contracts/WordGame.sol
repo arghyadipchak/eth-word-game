@@ -67,22 +67,22 @@ contract WordGame {
 
   event Turn(address player, uint256 turnNumber, string word, bool correct);
 
-  function sendWord(string memory newWord) public returns (bool sufficient) {
-    if (
-      players[turn] == msg.sender
-    ) // the player whose turn is now sent the word
-    {
-      strings.slice memory startNew = newWord.toSlice();
-      startNew._len = 1;
+  function isLastFirstSame(string memory w0, string memory w1) public pure returns (bool)
+  {
+    strings.slice memory s = w1.toSlice();
+    s._len = 1;
+    return (w0.toSlice().endsWith(s));
+  }
 
-      if (word.toSlice().endsWith(startNew)) // check if word sent is valid
-      {
+  function sendWord(string memory newWord) public returns (bool sufficient) {
+    if (players[turn] == msg.sender && isLastFirstSame(word, newWord)) 
+    // the player whose turn is now sent the word and new word sent is valid
+    {
         word = newWord;
         turn = turn + 1;
         turn = turn % players.length;
         emit Turn(msg.sender, turn, newWord, true);
         return true;
-      }
     }
     emit Turn(msg.sender, turn, newWord, true);
     return false;
