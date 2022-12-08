@@ -4,7 +4,7 @@ const WordGame = artifacts.require('WordGame')
 contract('WordGame: let us play', (acc) => {
   it('game check', async () => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame();
+    await fac.newGame(2);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -66,5 +66,11 @@ contract('WordGame: let us play', (acc) => {
     // acc[0]'s turn
     assert.equal(await game.methods.getTurn().call(),0,'turn of acc[0] did NOT come');
     
+    await game.methods.sendWord('kayak').send({from:acc[0]});
+    await game.methods.sendWord('kanye').send({from:acc[1]});
+    await game.methods.sendWord('elon').send({from:acc[2]});
+    
+    assert.equal(await game.methods.getIsGameEnd().call(),true,'game has NOT ended yet');
+
   })
 })
