@@ -11,15 +11,20 @@ contract WordGame {
   bool hasStarted;
   uint256 turn;
   address contractCreator;
-
+  uint256 round;
+  uint256 totalRounds;
+  bool isGameEnd;
   event NewPlayer(address player);
 
-  constructor(address creator) {
+  constructor(address creator, uint256 rounds) {
     word = 'abdakdabra';
     hasStarted = false;
     turn = 0;
     players.push(creator);
     contractCreator = creator;
+    round = 0;
+    totalRounds = rounds;
+    isGameEnd = false;
     // emit NewPlayer(creator);
   }
 
@@ -75,12 +80,18 @@ contract WordGame {
   }
 
   function sendWord(string memory newWord) public returns (bool sufficient) {
-    if (players[turn] == msg.sender && isLastFirstSame(word, newWord)) 
+    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !isGameEnd)
     // the player whose turn is now sent the word and new word sent is valid
+    // and game hasnt ended
     {
         word = newWord;
         turn = turn + 1;
         turn = turn % players.length;
+        if(turn==0)
+        {
+          round=round+1;
+        }
+        isGameEnd = round >= totalRounds;
         emit Turn(msg.sender, turn, newWord, true);
         return true;
     }
@@ -91,6 +102,11 @@ contract WordGame {
 function getTurn() public view returns(uint256)
 {
   return turn;
+}
+
+function getIsGameEnd() public view returns(bool)
+{
+  return isGameEnd;
 }
 
   function getState()
