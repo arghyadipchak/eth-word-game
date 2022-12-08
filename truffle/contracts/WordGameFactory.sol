@@ -30,4 +30,9 @@ contract WordGameFactory {
   function getName() public view returns (string memory) {
     return names[msg.sender];
   }
+
+  function getLastGame() public view returns (address)
+  {
+    return games[games.length-1];
+  }
 }
