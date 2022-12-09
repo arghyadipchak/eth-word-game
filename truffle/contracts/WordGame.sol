@@ -13,9 +13,9 @@ contract WordGame {
   address contractCreator;
   uint256 round;
   uint256 totalRounds;
-  bool isGameEnd;
+  mapping(address => bool) isDeleted;
   event NewPlayer(address player);
-
+  
   constructor(address creator, uint256 rounds) {
     word = 'abdakdabra';
     hasStarted = false;
@@ -24,7 +24,6 @@ contract WordGame {
     contractCreator = creator;
     round = 0;
     totalRounds = rounds;
-    isGameEnd = false;
     // emit NewPlayer(creator);
   }
 
@@ -33,12 +32,16 @@ contract WordGame {
   }
 
   function playerCount() public view returns (uint256) {
-    return players.length;
+    uint256 cnt = 0;
+    for(uint256 i = 0; i<players.length; ++i)
+      cnt+=( (isDeleted[players[i]]) ? 0 : 1);
+    
+    return cnt;
   }
 
   function checkIfPlayer(address p) public view returns (bool sufficient) {
     for (uint256 i = 0; i < players.length; ++i) {
-      if (players[i] == p) return true;
+      if (players[i] == p && !isDeleted[players[i]]) return true;
     }
     return false;
   }
@@ -79,19 +82,40 @@ contract WordGame {
     return (w0.toSlice().endsWith(s));
   }
 
+  function leaveGame() public returns (bool)
+  {
+    if(checkIfPlayer(msg.sender))
+    {
+      isDeleted[msg.sender]=true;
+      uint256 next = nextTurn();
+      if(turn>next)
+        round=round+1;
+      turn = next;
+      return true;
+    }
+    return false;
+  }
+
+  function nextTurn() public view returns (uint256 next)
+  {
+    next = (turn + 1) % players.length;
+    while(isDeleted[players[next]] && next!=turn)
+    {
+      next=(next+1)%players.length;
+    }
+    return next;
+  }
+
   function sendWord(string memory newWord) public returns (bool sufficient) {
-    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !isGameEnd)
+    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !hasGameEnded())
     // the player whose turn is now sent the word and new word sent is valid
     // and game hasnt ended
     {
         word = newWord;
-        turn = turn + 1;
-        turn = turn % players.length;
-        if(turn==0)
-        {
+        uint256 next = nextTurn();
+        if(turn>next)
           round=round+1;
-        }
-        isGameEnd = round >= totalRounds;
+        turn = next;
         emit Turn(msg.sender, turn, newWord, true);
         return true;
     }
@@ -104,9 +128,9 @@ function getTurn() public view returns(uint256)
   return turn;
 }
 
-function getIsGameEnd() public view returns(bool)
+function hasGameEnded() public view returns(bool)
 {
-  return isGameEnd;
+  return playerCount()==1 || (round >= totalRounds);
 }
 
   function getState()
