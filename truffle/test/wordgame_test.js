@@ -8,6 +8,7 @@ contract('WordGame: let us play', (acc) => {
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
+    game.options.gas = 5000000;
     out = await game.methods.getWord().call();
     assert.equal(out, 'abdakdabra','word check failed');
 
@@ -80,7 +81,7 @@ contract('WordGame: let us play', (acc) => {
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
-
+    game.options.gas = 5000000;
     //Will start to play a game now
 
     //3 people play a game
@@ -218,6 +219,48 @@ contract('WordGame: let us play', (acc) => {
     // acc[2] should no longer be a player
     assert.equal(await game.methods.checkIfPlayer(acc[2]).call(),false,'acc[2] is a player');
 
+    // game should end
+    assert.equal(await game.methods.hasGameEnded().call(),true,'game has NOT ended yet');
+    
+  });
+
+  it('repeat word tests: 1 guy repeats words', async() => {
+    let fac = await WordGameFactory.deployed();
+    await fac.newGame(2);
+    addr = await fac.getLastGame();
+    game = new web3.eth.Contract(WordGame.abi);
+    game.options.address=addr;
+    game.options.gas = 5000000;
+
+    //Will start to play a game now
+
+    //3 people play a game
+    await game.methods.joinGame().send({from:acc[0]});
+    await game.methods.joinGame().send({from:acc[1]});
+    await game.methods.joinGame().send({from:acc[2]});
+
+    await game.methods.startGame().send({from:acc[0]});
+
+    
+
+    // acc[0] sends word
+    await game.methods.sendWord('abs').send({from:acc[0]});
+    // turn of acc[1]
+    await game.methods.sendWord('story').send({from:acc[1]});
+    // turn of acc[2]
+    await game.methods.sendWord('yak').send({from:acc[2]});
+    // acc[0] sends word
+    await game.methods.sendWord('kayak').send({from:acc[0]});
+    // acc[1] sends repeat word
+    await game.methods.sendWord('kayak').send({from:acc[1]});
+    
+    assert.equal(await game.methods.getTurn().call(),1,'acc[1] was able to send REPEAT word');
+    
+    // acc[1] sends word
+    await game.methods.sendWord('kanye').send({from:acc[1]});
+    assert.equal(await game.methods.getWord().call(),'kanye','acc[1] was NOT able to send word');
+    // acc[2] leaves
+    await game.methods.leaveGame().send({from:acc[2]});
     // game should end
     assert.equal(await game.methods.hasGameEnded().call(),true,'game has NOT ended yet');
     
