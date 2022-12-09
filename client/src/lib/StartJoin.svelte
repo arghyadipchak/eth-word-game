@@ -36,14 +36,13 @@
   async function createGame() {
     createButton = true
     const singerinstance = instance.connect(signer)
-    temp = await singerinstance.newGame()
+    temp = await singerinstance.newGame(100)
 
     instance.on('NewGame', (game, event) => {
       if (event.transactionHash === temp.hash) {
         startAddress = game
         gameAddress.update(_ => startAddress)
       }
-      console.log(game)
     })
   }
 
