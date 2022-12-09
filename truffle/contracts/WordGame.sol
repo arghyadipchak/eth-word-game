@@ -72,7 +72,10 @@ contract WordGame {
 
   event Turn(address player, uint256 turnNumber, string word, bool correct);
 
-  function isLastFirstSame(string memory w0, string memory w1) public pure returns (bool)
+  function isLastFirstSame(string memory w0, string memory w1)
+    public
+    pure
+    returns (bool)
   {
     strings.slice memory s = w1.toSlice();
     s._len = 1;
@@ -80,34 +83,34 @@ contract WordGame {
   }
 
   function sendWord(string memory newWord) public returns (bool sufficient) {
-    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !isGameEnd)
-    // the player whose turn is now sent the word and new word sent is valid
+    if (
+      players[turn] == msg.sender &&
+      isLastFirstSame(word, newWord) &&
+      !isGameEnd
+    ) // the player whose turn is now sent the word and new word sent is valid
     // and game hasnt ended
     {
-        word = newWord;
-        turn = turn + 1;
-        turn = turn % players.length;
-        if(turn==0)
-        {
-          round=round+1;
-        }
-        isGameEnd = round >= totalRounds;
-        emit Turn(msg.sender, turn, newWord, true);
-        return true;
+      word = newWord;
+      turn = turn + 1;
+      turn = turn % players.length;
+      if (turn == 0) {
+        round = round + 1;
+      }
+      isGameEnd = round >= totalRounds;
+      emit Turn(msg.sender, turn, newWord, true);
+      return true;
     }
     emit Turn(msg.sender, turn, newWord, true);
     return false;
   }
 
-function getTurn() public view returns(uint256)
-{
-  return turn;
-}
+  function getTurn() public view returns (uint256) {
+    return turn;
+  }
 
-function getIsGameEnd() public view returns(bool)
-{
-  return isGameEnd;
-}
+  function getIsGameEnd() public view returns (bool) {
+    return isGameEnd;
+  }
 
   function getState()
     public

@@ -20,7 +20,10 @@
     console.log(playerList.length)
   }
 
-  gameInstance.on('NewPlayer', player => playerList.push(player))
+  gameInstance.on('NewPlayer', player => {
+    console.log(player)
+    playerList.push(player)
+  })
 </script>
 
 <div class="flex h-screen">

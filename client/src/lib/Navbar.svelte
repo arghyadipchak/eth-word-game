@@ -1,14 +1,14 @@
 <script>
-  import { currentAddress, refresh, deployerAddress } from './stores.js'
+  import { currentAddress, refresh, deployerAddress } from './stores'
 
   let ethereum = window.ethereum
   let currAdd
   let deployAdd
 
   if (ethereum) {
-    currentAddress.update(current => ethereum.selectedAddress || '')
+    currentAddress.update(() => ethereum.selectedAddress || '')
     ethereum.on('accountsChanged', () =>
-      currentAddress.update(curr => ethereum.selectedAddress)
+      currentAddress.update(() => ethereum.selectedAddress)
     )
   } else {
     document.addEventListener('visibilitychange', () => {
@@ -70,12 +70,12 @@
         <li>
           <!-- svelte-ignore a11y-missing-attribute -->
           <button class="btn-lg text-base"
-            >Account : {currAdd.slice(0, 5)}...{currAdd.slice(-4)}
+            >Account: {currAdd.slice(0, 5)}...{currAdd.slice(-4)}
           </button>
         </li>
         <li>
           <button class="btn-lg text-base"
-            >Deployer : {deployAdd.slice(0, 5)}...{deployAdd.slice(-4)}
+            >Deployer: {deployAdd.slice(0, 5)}...{deployAdd.slice(-4)}
           </button>
         </li>
       </ul>
