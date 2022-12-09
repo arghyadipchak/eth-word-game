@@ -14,6 +14,7 @@ contract WordGame {
   uint256 round;
   uint256 totalRounds;
   mapping(address => bool) isDeleted;
+  string[] usedWords;
   event NewPlayer(address player);
   
   constructor(address creator, uint256 rounds) {
@@ -24,6 +25,7 @@ contract WordGame {
     contractCreator = creator;
     round = 0;
     totalRounds = rounds;
+    usedWords.push(word);
     // emit NewPlayer(creator);
   }
 
@@ -31,6 +33,15 @@ contract WordGame {
     return players[i];
   }
 
+  function checkWordUsed(string memory w) public view returns (bool)
+  {
+    for(uint256 i = 0; i < usedWords.length; ++i)
+    {
+      if(usedWords[i].toSlice().equals(w.toSlice()))
+        return true;
+    }
+    return false;
+  }
   function playerCount() public view returns (uint256) {
     uint256 cnt = 0;
     for(uint256 i = 0; i<players.length; ++i)
@@ -107,11 +118,12 @@ contract WordGame {
   }
 
   function sendWord(string memory newWord) public returns (bool sufficient) {
-    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !hasGameEnded())
+    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !hasGameEnded() && !checkWordUsed(newWord))
     // the player whose turn is now sent the word and new word sent is valid
     // and game hasnt ended
     {
         word = newWord;
+        usedWords.push(word);
         uint256 next = nextTurn();
         if(turn>next)
           round=round+1;
