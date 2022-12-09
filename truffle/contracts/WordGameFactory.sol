@@ -7,11 +7,11 @@ contract WordGameFactory {
   address[] games;
   mapping(address => string) names;
 
-  event NameChanged(address user, string name);
   event NewGame(address game);
+  event NameChanged(address user, string name);
 
   function newGame(uint256 n) public returns (address newGameAdd) {
-    newGameAdd = address(new WordGame(msg.sender,n));
+    newGameAdd = address(new WordGame(msg.sender, n));
     games.push(newGameAdd);
     emit NewGame(newGameAdd);
   }
@@ -31,8 +31,7 @@ contract WordGameFactory {
     return names[msg.sender];
   }
 
-  function getLastGame() public view returns (address)
-  {
-    return games[games.length-1];
+  function getLastGame() public view returns (address) {
+    return games[games.length - 1];
   }
 }

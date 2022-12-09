@@ -7,7 +7,7 @@
   })
 
   let metaMask = false
-  import { refresh, currentAddress } from './stores.js'
+  import { refresh, currentAddress } from './stores'
   let ethereum = window.ethereum
 
   let myAddress = ''
@@ -17,14 +17,13 @@
 
   try {
     metaMask = ethereum === undefined || ethereum.isMetaMask === false
-    console.log(myAddress)
     ethereum
       .request({ method: 'eth_requestAccounts' })
-      .then(accs => currentAddress.update(current => accs[0]))
+      .then(accs => currentAddress.update(() => accs[0]))
       .catch(() => {})
 
     ethereum.on('accountsChanged', accs =>
-      currentAddress.update(current => accs[0] || '')
+      currentAddress.update(() => accs[0] || '')
     )
   } catch (_) {
     document.addEventListener('visibilitychange', () => {

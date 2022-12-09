@@ -1,17 +1,3 @@
-<!-- 
-TODO
-Add the game page
-connect to the game page
-add waiting screen for players
-add joined players for waiting screen
-Game screen:
-    scrolling words
-    what alphabet to put
-    correct/incorrect?
-    lives?
-    time?
-    challenge time?
- -->
 <script lang="ts">
   import { gameAddress, deployerAddress, currentAddress } from './stores'
   import { ethers } from 'ethers'
@@ -47,21 +33,20 @@ Game screen:
     startButton = !startButton
   }
 
-  async function startGame() {
+  async function createGame() {
     createButton = true
     const singerinstance = instance.connect(signer)
-    temp = await singerinstance.newGame()
+    temp = await singerinstance.newGame(100)
 
     instance.on('NewGame', (game, event) => {
       if (event.transactionHash === temp.hash) {
         startAddress = game
         gameAddress.update(_ => startAddress)
       }
-      console.log(game)
     })
   }
 
-  async function stopJoin() {
+  async function startGame() {
     const gameInstance = new ethers.Contract(
       startAddress,
       WordGame.abi,
@@ -113,7 +98,7 @@ Game screen:
           {:else if !createButton}
             <button
               class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
-              on:click={startGame}
+              on:click={createGame}
             >
               Create Game
             </button>
@@ -125,7 +110,7 @@ Game screen:
         </div>
         <div>
           <button
-            on:click={stopJoin}
+            on:click={startGame}
             class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
           >
             START
