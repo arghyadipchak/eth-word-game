@@ -2,48 +2,64 @@
   import { gameAddress, currentAddress, plays } from './stores'
   import { ethers } from 'ethers'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
+  import PlayersTab from './playersTab.svelte'
 
   const provider = new ethers.providers.Web3Provider(window.ethereum)
   const signer = provider.getSigner()
   const gameInstance = new ethers.Contract($gameAddress, WordGame.abi, provider)
   const singerGameInstance = gameInstance.connect(signer)
 
-  let words = []
+  let lastWord = 'abrakadabra'
   let play = 0
   let myturn = false
-  let mypos = $plays.indexOf
+  let mypos = gameInstance.getPlayerIndex($currentAddress)
   let word = ''
-  let turn = []
+  let turn = [{ Player: 'initial', Turnno: 0, Word: 'abrakadabra', Err: true }]
+  let currentturn = turn.at(-1).Turnno
 
-  gameInstance.on('Turn', (player, turnnumber, word, correct) =>
-    turn.push({ player: player, turnno: turnnumber, word: word, err: correct })
-  )
+  singerGameInstance.on('GameStart', x => {
+    updatepos()
+  })
+
+  gameInstance.on('Turn', (player, turnnumber, word, correct) => {
+    turn.push({ Player: player, Turnno: turnnumber, Word: word, Err: correct })
+    if (correct) {
+      lastWord = word
+    }
+    currentturn = turnnumber
+  })
 
   function addWord() {
     if (word !== '') {
-      words.push(word)
-      words = words
+      singerGameInstance.sendWord(word)
       word = ''
-      console.log(words)
     }
   }
 
-  function removeWord() {
-    if (words.length > 1) {
-      words.pop()
-      words = words
-      console.log(words)
-    }
+  async function updatepos() {
+    await gameInstance.getPlayerIndex($currentAddress).then(value => {
+      mypos = value.toNumber()
+    })
+    console.log(mypos)
+    console.log(currentturn)
+    myturn = currentturn === mypos
   }
 </script>
 
 <div class="flex h-screen items-center">
+  <PlayersTab />
   <div>
     <div>
-      {#each words.slice(-6) as word1}
-        <span class="w-32 h-24 m-1 bg-success text-success-content"
-          >{word1}</span
-        >
+      {#each turn.slice(-6) as singleTurn}
+        {#if singleTurn.Err}
+          <span class="w-32 h-24 m-1 bg-success text-success-content"
+            >{singleTurn.Player} <br /> {singleTurn.Word}</span
+          >
+        {:else}
+          <span class="w-32 h-24 m-1 bg-error text-error-content"
+            >{singleTurn.Player} <br /> {singleTurn.Word}</span
+          >
+        {/if}
       {/each}
     </div>
     <div class="items-center">
@@ -68,6 +84,7 @@
       <button on:click={addWord} class="btn-primary btn m-2">
         send word
       </button>
+      <button on:click={updatepos} class="btn">yyyyy</button>
     </div>
   </div>
 </div>

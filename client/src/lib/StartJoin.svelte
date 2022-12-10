@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { gameAddress, deployerAddress, currentAddress } from './stores'
+  import { gameAddress, deployerAddress, currentAddress, plays } from './stores'
   import { ethers } from 'ethers'
   import Factory from '../../../truffle/build/contracts/WordGameFactory.json'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
+  import GameScreen from './GameScreen.svelte'
+  import PlayersTab from './playersTab.svelte'
 
   let joinButton = false
   let startButton = false
   let createButton = false
   let joinAsSpec = false
   let validGameJoined = false
+  let gamestarted = false
 
   let joinAddress = ''
   let startAddress = ''
@@ -36,7 +39,7 @@
   async function createGame() {
     createButton = true
     const singerinstance = instance.connect(signer)
-    temp = await singerinstance.newGame()
+    temp = await singerinstance.newGame($deployerAddress)
 
     instance.on('NewGame', (game, event) => {
       if (event.transactionHash === temp.hash) {
@@ -44,6 +47,10 @@
         gameAddress.update(_ => startAddress)
       }
     })
+  }
+
+  function _startGame() {
+    startGame()
   }
 
   async function startGame() {
@@ -70,7 +77,9 @@
       )
       const signerGameInstance = gameInstance.connect(signer)
       const flag2 = await signerGameInstance.gameStarted()
-      validGameJoined = await signerGameInstance.checkIfPlayer($currentAddress)
+      let numPlayers = await signerGameInstance.playerCount()
+      let playerIndex = await signerGameInstance.getPlayerIndex($currentAddress)
+      validGameJoined = playerIndex < numPlayers
 
       if (flag2 && !validGameJoined) {
         // add check for this
@@ -81,96 +90,111 @@
       }
     }
   }
+
+  const gameInstance = new ethers.Contract(startAddress, WordGame.abi, provider)
+  const singerGameInstance = gameInstance.connect(signer)
+
+  singerGameInstance.on('GameStart', x => {
+    if (x === $gameAddress) {
+      gamestarted = true
+    }
+  })
 </script>
 
-<div class="flex h-screen">
-  <div class="m-auto">
-    <div
-      class="grid grid-cols-1 gap-1 place-content-center h-10 justify-items-center"
-    >
-      {#if startButton}
-        <div>
-          {#if startAddress !== ''}
-            <p class="text-xl">
-              Game Address : <br />
-              {startAddress}
-            </p>
-          {:else if !createButton}
+{#if !gamestarted}
+  <div class="flex h-screen">
+    <div class="m-auto">
+      <div
+        class="grid grid-cols-1 gap-1 place-content-center h-10 justify-items-center"
+      >
+        {#if startButton}
+          <div>
+            {#if startAddress !== ''}
+              <p class="text-xl">
+                Game Address : <br />
+                {startAddress}
+              </p>
+            {:else if !createButton}
+              <button
+                class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+                on:click={createGame}
+              >
+                Create Game
+              </button>
+            {:else}
+              <button
+                class="btn loading bth-lg btn-primary m-2 h-20 text-xl w-60"
+                >generating game</button
+              >
+            {/if}
+          </div>
+          <div>
             <button
-              class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
-              on:click={createGame}
-            >
-              Create Game
-            </button>
-          {:else}
-            <button class="btn loading bth-lg btn-primary m-2 h-20 text-xl w-60"
-              >generating game</button
-            >
-          {/if}
-        </div>
-        <div>
-          <button
-            on:click={startGame}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
-          >
-            START
-          </button>
-          <button
-            on:click={toggleStart}
-            class="btn btn-ghost btn-primary m-2 h-15 text-lg"
-          >
-            BACK
-          </button>
-        </div>
-      {:else if joinButton}
-        <div>
-          <input
-            type="text"
-            bind:value={joinAddress}
-            placeholder="Enter game address"
-            class="input input-lg input-ghost max-w-prose w-[32rem] text-xl"
-          />
-        </div>
-        <div>
-          {#if !joinAsSpec}
-            <button
-              on:click={joinGame}
+              on:click={_startGame}
               class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
             >
-              JOIN
+              Start
             </button>
-          {:else}
             <button
-              on:click={joinGame}
-              class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
-              >Join as spectator?
+              on:click={toggleStart}
+              class="btn btn-ghost btn-primary m-2 h-15 text-lg"
+            >
+              BACK
             </button>
-          {/if}
-          <button
-            on:click={toggleJoin}
-            class="btn btn-ghost btn-primary m-2 h-15 text-lg"
-          >
-            BACK
-          </button>
-        </div>
-      {:else}
-        <div>
-          <button
-            on:click={toggleStart}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl  w-60"
-          >
-            START A GAME
-          </button>
-        </div>
-        <div>
-          <button
-            on:click={toggleJoin}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl  w-60"
-          >
-            JOIN A GAME
-          </button>
-        </div>
-      {/if}
+          </div>
+        {:else if joinButton}
+          <div>
+            <input
+              type="text"
+              bind:value={joinAddress}
+              placeholder="Enter game address"
+              class="input input-lg input-ghost max-w-prose w-[32rem] text-xl"
+            />
+          </div>
+          <div>
+            {#if !joinAsSpec}
+              <button
+                on:click={joinGame}
+                class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+              >
+                JOIN
+              </button>
+            {:else}
+              <button
+                on:click={joinGame}
+                class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+                >Join as spectator?
+              </button>
+            {/if}
+            <button
+              on:click={toggleJoin}
+              class="btn btn-ghost btn-primary m-2 h-15 text-lg"
+            >
+              BACK
+            </button>
+          </div>
+        {:else}
+          <div>
+            <button
+              on:click={toggleStart}
+              class="btn bth-lg btn-primary m-2 h-20 text-xl  w-60"
+            >
+              START A GAME
+            </button>
+          </div>
+          <div>
+            <button
+              on:click={toggleJoin}
+              class="btn bth-lg btn-primary m-2 h-20 text-xl  w-60"
+            >
+              JOIN A GAME
+            </button>
+          </div>
+        {/if}
+        <PlayersTab />
+      </div>
     </div>
   </div>
-</div>
+{:else}
+  <GameScreen />
+{/if}

@@ -8,10 +8,10 @@
 </script>
 
 <main>
-  <GameScreen />
-  <!-- <Navbar /> -->
-  <!-- <MetaMask /> -->
-  <!-- <StartJoin /> -->
+  <Navbar />
+  <MetaMask />
+  <StartJoin />
   <!-- <PlayersTab /> -->
+  <!-- <GameScreen /> -->
   <!-- <Modalinput /> -->
 </main>

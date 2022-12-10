@@ -18,12 +18,13 @@
         let x = await gameInstance.playerList(i)
         array.push(x) // where getItem do items[I] in solidity
       }
+      plays.update(_ => array)
       return array
     }
   }
 
   gameInstance.on('NewPlayer', player => {
-    getPlayers().then(x => plays.update(_ => x))
+    if ($gameAddress !== '') getPlayers().then(x => plays.update(_ => x))
   })
 
   plays.subscribe(x => {
@@ -31,8 +32,4 @@
   })
 </script>
 
-<div class="flex h-screen">
-  <div class="m-auto">
-    <button on:click={getPlayers}>{playerL}</button>
-  </div>
-</div>
+<button class="btn" on:click={getPlayers}> hello {$plays.length}</button>
