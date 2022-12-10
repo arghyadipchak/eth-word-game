@@ -16,6 +16,7 @@ contract WordGame {
   mapping(address => bool) isDeleted;
   string[] usedWords;
   event NewPlayer(address player);
+  event GameStart(address cont);
 
   constructor(address creator) {
     word = 'abdakdabra';
@@ -64,13 +65,12 @@ contract WordGame {
     }
   }
 
-  function startGame() public returns (bool sufficient) {
+  function startGame() public {
     //start game only if a player says and s/he is contract creator
     if (checkIfPlayer(msg.sender) && msg.sender == contractCreator) {
       hasStarted = true;
-      return true;
+      emit GameStart(address(this));
     }
-    return false;
   }
 
   function gameStarted() public view returns (bool started) {
