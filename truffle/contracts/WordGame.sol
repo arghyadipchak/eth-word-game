@@ -15,9 +15,15 @@ contract WordGame {
   uint256 totalRounds;
   mapping(address => bool) isDeleted;
   string[] usedWords;
+
+  address judge;
+  string appStr = "abdakdabra";
+  bool appSeen = false;
+  bool isApproved = false;
+
   event NewPlayer(address player);
-  
-  constructor(address creator, uint256 rounds) {
+  //event Foo(string myword);
+  constructor(address creator, uint256 rounds, address myjudge) {
     word = 'abdakdabra';
     hasStarted = false;
     turn = 0;
@@ -26,6 +32,7 @@ contract WordGame {
     round = 0;
     totalRounds = rounds;
     usedWords.push(word);
+    judge = myjudge;
     // emit NewPlayer(creator);
   }
 
@@ -98,10 +105,13 @@ contract WordGame {
     if(checkIfPlayer(msg.sender))
     {
       isDeleted[msg.sender]=true;
+      if(players[turn]==msg.sender)
+      {
       uint256 next = nextTurn();
       if(turn>next)
         round=round+1;
       turn = next;
+      }
       return true;
     }
     return false;
@@ -122,17 +132,41 @@ contract WordGame {
     // the player whose turn is now sent the word and new word sent is valid
     // and game hasnt ended
     {
-        word = newWord;
-        usedWords.push(word);
-        uint256 next = nextTurn();
-        if(turn>next)
-          round=round+1;
-        turn = next;
-        emit Turn(msg.sender, turn, newWord, true);
-        return true;
+       sendForApproval(newWord);
     }
     emit Turn(msg.sender, turn, newWord, true);
     return false;
+  }
+  //should be private
+  function sendForApproval(string memory s) public returns (bool)
+  {
+    appStr = s;
+    appSeen = false;
+    isApproved = false;
+  }
+
+  function getApprovalInfo() public view returns (string memory, bool, bool)
+  {
+    return (appStr,appSeen,isApproved);
+  }
+
+  function setApproval(bool approve) public returns (bool)
+  {
+  if(msg.sender==judge && appSeen==false)
+  {
+    appSeen = true;
+    isApproved = approve;
+    if(isApproved)
+    {
+      word = appStr;
+      usedWords.push(word);
+      uint256 next = nextTurn();
+      if(turn>next)
+        round=round+1;
+      turn = next;
+      //emit Turn(msg.sender, turn, newWord, true);
+    }
+  }
   }
 
 function getTurn() public view returns(uint256)
