@@ -98,6 +98,10 @@ contract WordGame {
     return true;
   }
 
+  function getLives() public view returns (uint256) {
+    return lives[msg.sender];
+  }
+
   function getWord() public view returns (string memory) {
     return lastWord;
   }
