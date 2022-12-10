@@ -1,10 +1,42 @@
 const WordGameFactory = artifacts.require('WordGameFactory')
 const WordGame = artifacts.require('WordGame')
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
 contract('WordGame: let us play', (acc) => {
+  it('play simple game', async() => {
+    let fac = await WordGameFactory.deployed();
+    await fac.newGame(2, acc[7]);
+    addr = await fac.getLastGame();
+    game = new web3.eth.Contract(WordGame.abi);
+    game.options.address=addr;
+    game.options.gas = 5000000;
+    //Will start to play a game now
+
+    //3 people play a game
+    await game.methods.joinGame().send({from:acc[0]});
+    await game.methods.joinGame().send({from:acc[1]});
+    await game.methods.joinGame().send({from:acc[2]});
+
+    await game.methods.startGame().send({from:acc[0]});
+
+    // acc[0] sends word
+
+    await game.methods.sendWord('ajgyyfty').send({from:acc[0]});
+    await game.methods.setApproval(false).send({from:acc[7]});
+    await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
+    
+    assert.equal(await game.methods.getTurn().call(),1,'turn of acc[1] did NOT come');
+    
+  });
+  
   it('game check', async () => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame(2);
+    await fac.newGame(2,acc[7]);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -54,6 +86,7 @@ contract('WordGame: let us play', (acc) => {
     
     // acc[0] sends a corrct word
     await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     // he should succed
     assert.equal(await game.methods.getWord().call(),'abs','acc[0] was NOT able to send correct word');
     //acc[1]'s turn should come
@@ -62,14 +95,19 @@ contract('WordGame: let us play', (acc) => {
     // now play until acc[0]'s turn comes
 
     await game.methods.sendWord('story').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     await game.methods.sendWord('yak').send({from:acc[2]});
+    await game.methods.setApproval(true).send({from:acc[7]});
 
     // acc[0]'s turn
     assert.equal(await game.methods.getTurn().call(),0,'turn of acc[0] did NOT come');
     
     await game.methods.sendWord('kayak').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     await game.methods.sendWord('kanye').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     await game.methods.sendWord('elon').send({from:acc[2]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     
     assert.equal(await game.methods.hasGameEnded().call(),true,'game has NOT ended yet');
 
@@ -77,7 +115,7 @@ contract('WordGame: let us play', (acc) => {
 
   it('leave game tests: everyone leaves', async() => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame(1);
+    await fac.newGame(1, acc[7]);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -97,8 +135,8 @@ contract('WordGame: let us play', (acc) => {
     assert.equal(await game.methods.checkIfPlayer(acc[1]).call(),false,'acc[1] is a player');
     
     // acc[0] sends word
-
     await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     // turn of acc[2]
     assert.equal(await game.methods.getTurn().call(),2,'turn of acc[2] did NOT come');
     
@@ -111,7 +149,7 @@ contract('WordGame: let us play', (acc) => {
 
   it('leave game tests: some people leave', async() => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame(2);
+    await fac.newGame(2, acc[7]);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -130,6 +168,7 @@ contract('WordGame: let us play', (acc) => {
 
     // acc[0] sends word
     await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
 
     //acc[1] leaves game
     await game.methods.leaveGame().send({from:acc[1]});
@@ -138,10 +177,12 @@ contract('WordGame: let us play', (acc) => {
     
     // turn of acc[2]
     await game.methods.sendWord('story').send({from:acc[2], gas: 5000000});
+    await game.methods.setApproval(true).send({from:acc[7]});
     assert.equal(await game.methods.getWord().call(),'story','acc[2] was NOT able to send word');
 
     // turn of acc[0]
     await game.methods.sendWord('yak').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     assert.equal(await game.methods.getWord().call(),'yak','acc[0] was NOT able to send word');
     
     // acc[2] leaves
@@ -153,7 +194,7 @@ contract('WordGame: let us play', (acc) => {
 
   it('leave game tests: some people leave 2', async() => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame(2);
+    await fac.newGame(2, acc[7]);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -172,9 +213,11 @@ contract('WordGame: let us play', (acc) => {
 
     // acc[0] sends word
     await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
 
     // turn of acc[1]
     await game.methods.sendWord('story').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     assert.equal(await game.methods.getWord().call(),'story','acc[1] was NOT able to send word');
     
     //acc[2] leaves game
@@ -184,13 +227,14 @@ contract('WordGame: let us play', (acc) => {
 
     // turn of acc[0]
     await game.methods.sendWord('yak').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     assert.equal(await game.methods.getWord().call(),'yak','acc[0] was NOT able to send word');
     
   });
 
   it('leave game tests: some people leave 3', async() => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame(1);
+    await fac.newGame(1, acc[7]);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -209,9 +253,11 @@ contract('WordGame: let us play', (acc) => {
 
     // acc[0] sends word
     await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
 
     // turn of acc[1]
     await game.methods.sendWord('story').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     assert.equal(await game.methods.getWord().call(),'story','acc[1] was NOT able to send word');
     
     //acc[2] leaves game
@@ -226,7 +272,7 @@ contract('WordGame: let us play', (acc) => {
 
   it('repeat word tests: 1 guy repeats words', async() => {
     let fac = await WordGameFactory.deployed();
-    await fac.newGame(2);
+    await fac.newGame(2, acc[7]);
     addr = await fac.getLastGame();
     game = new web3.eth.Contract(WordGame.abi);
     game.options.address=addr;
@@ -245,19 +291,25 @@ contract('WordGame: let us play', (acc) => {
 
     // acc[0] sends word
     await game.methods.sendWord('abs').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     // turn of acc[1]
     await game.methods.sendWord('story').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     // turn of acc[2]
     await game.methods.sendWord('yak').send({from:acc[2]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     // acc[0] sends word
     await game.methods.sendWord('kayak').send({from:acc[0]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     // acc[1] sends repeat word
     await game.methods.sendWord('kayak').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     
     assert.equal(await game.methods.getTurn().call(),1,'acc[1] was able to send REPEAT word');
     
     // acc[1] sends word
     await game.methods.sendWord('kanye').send({from:acc[1]});
+    await game.methods.setApproval(true).send({from:acc[7]});
     assert.equal(await game.methods.getWord().call(),'kanye','acc[1] was NOT able to send word');
     // acc[2] leaves
     await game.methods.leaveGame().send({from:acc[2]});
