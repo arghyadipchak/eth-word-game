@@ -10,8 +10,8 @@ contract WordGameFactory {
   event NewGame(address game);
   event NameChanged(address user, string name);
 
-  function newGame(uint256 n, address judge) public returns (address newGameAdd) {
-    newGameAdd = address(new WordGame(msg.sender, n, judge));
+  function newGame(address judge) public returns (address newGameAdd) {
+    newGameAdd = address(new WordGame(msg.sender, judge));
     games.push(newGameAdd);
     emit NewGame(newGameAdd);
   }
@@ -22,6 +22,10 @@ contract WordGameFactory {
     return false;
   }
 
+  function getLastGame() public view returns (address) {
+    return games[games.length - 1];
+  }
+
   function setName(string memory name) public {
     names[msg.sender] = name;
     emit NameChanged(msg.sender, name);
@@ -29,9 +33,5 @@ contract WordGameFactory {
 
   function getName() public view returns (string memory) {
     return names[msg.sender];
-  }
-
-  function getLastGame() public view returns (address) {
-    return games[games.length - 1];
   }
 }

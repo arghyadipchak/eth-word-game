@@ -1,5 +1,4 @@
 const WordGameFactory = artifacts.require('WordGameFactory')
-const WordGame = artifacts.require('WordGame')
 
 contract('WordGameFactory: deployment', () => {
   it('has been deployed', async () => {
