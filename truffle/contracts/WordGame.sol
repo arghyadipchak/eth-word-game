@@ -16,37 +16,34 @@ contract WordGame {
   mapping(address => bool) isDeleted;
   string[] usedWords;
   event NewPlayer(address player);
-  
-  constructor(address creator, uint256 rounds) {
+
+  constructor(address creator) {
     word = 'abdakdabra';
     hasStarted = false;
     turn = 0;
     players.push(creator);
     contractCreator = creator;
     round = 0;
-    totalRounds = rounds;
     usedWords.push(word);
-    // emit NewPlayer(creator);
+    emit NewPlayer(creator);
   }
 
   function playerList(uint256 i) public view returns (address) {
     return players[i];
   }
 
-  function checkWordUsed(string memory w) public view returns (bool)
-  {
-    for(uint256 i = 0; i < usedWords.length; ++i)
-    {
-      if(usedWords[i].toSlice().equals(w.toSlice()))
-        return true;
+  function checkWordUsed(string memory w) public view returns (bool) {
+    for (uint256 i = 0; i < usedWords.length; ++i) {
+      if (usedWords[i].toSlice().equals(w.toSlice())) return true;
     }
     return false;
   }
+
   function playerCount() public view returns (uint256) {
     uint256 cnt = 0;
-    for(uint256 i = 0; i<players.length; ++i)
-      cnt+=( (isDeleted[players[i]]) ? 0 : 1);
-    
+    for (uint256 i = 0; i < players.length; ++i)
+      cnt += ((isDeleted[players[i]]) ? 0 : 1);
+
     return cnt;
   }
 
@@ -86,64 +83,63 @@ contract WordGame {
 
   event Turn(address player, uint256 turnNumber, string word, bool correct);
 
-  function isLastFirstSame(string memory w0, string memory w1) public pure returns (bool)
+  function isLastFirstSame(string memory w0, string memory w1)
+    public
+    pure
+    returns (bool)
   {
     strings.slice memory s = w1.toSlice();
     s._len = 1;
     return (w0.toSlice().endsWith(s));
   }
 
-  function leaveGame() public returns (bool)
-  {
-    if(checkIfPlayer(msg.sender))
-    {
-      isDeleted[msg.sender]=true;
+  function leaveGame() public returns (bool) {
+    if (checkIfPlayer(msg.sender)) {
+      isDeleted[msg.sender] = true;
       uint256 next = nextTurn();
-      if(turn>next)
-        round=round+1;
+      if (turn > next) round = round + 1;
       turn = next;
       return true;
     }
     return false;
   }
 
-  function nextTurn() public view returns (uint256 next)
-  {
+  function nextTurn() public view returns (uint256 next) {
     next = (turn + 1) % players.length;
-    while(isDeleted[players[next]] && next!=turn)
-    {
-      next=(next+1)%players.length;
+    while (isDeleted[players[next]] && next != turn) {
+      next = (next + 1) % players.length;
     }
     return next;
   }
 
   function sendWord(string memory newWord) public returns (bool sufficient) {
-    if (players[turn] == msg.sender && isLastFirstSame(word, newWord) && !hasGameEnded() && !checkWordUsed(newWord))
-    // the player whose turn is now sent the word and new word sent is valid
+    if (
+      players[turn] == msg.sender &&
+      isLastFirstSame(word, newWord) &&
+      !hasGameEnded() &&
+      !checkWordUsed(newWord)
+    ) // the player whose turn is now sent the word and new word sent is valid
     // and game hasnt ended
     {
-        word = newWord;
-        usedWords.push(word);
-        uint256 next = nextTurn();
-        if(turn>next)
-          round=round+1;
-        turn = next;
-        emit Turn(msg.sender, turn, newWord, true);
-        return true;
+      word = newWord;
+      usedWords.push(word);
+      uint256 next = nextTurn();
+      if (turn > next) round = round + 1;
+      turn = next;
+      emit Turn(msg.sender, turn, newWord, true);
+      return true;
     }
     emit Turn(msg.sender, turn, newWord, true);
     return false;
   }
 
-function getTurn() public view returns(uint256)
-{
-  return turn;
-}
+  function getTurn() public view returns (uint256) {
+    return turn;
+  }
 
-function hasGameEnded() public view returns(bool)
-{
-  return playerCount()==1 || (round >= totalRounds);
-}
+  function hasGameEnded() public view returns (bool) {
+    return playerCount() == 1 || (round >= totalRounds);
+  }
 
   function getState()
     public

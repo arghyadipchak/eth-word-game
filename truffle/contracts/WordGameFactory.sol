@@ -10,8 +10,8 @@ contract WordGameFactory {
   event NewGame(address game);
   event NameChanged(address user, string name);
 
-  function newGame(uint256 n) public returns (address newGameAdd) {
-    newGameAdd = address(new WordGame(msg.sender, n));
+  function newGame() public returns (address newGameAdd) {
+    newGameAdd = address(new WordGame(msg.sender));
     games.push(newGameAdd);
     emit NewGame(newGameAdd);
   }
