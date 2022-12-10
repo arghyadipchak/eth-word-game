@@ -20,6 +20,7 @@ contract WordGame {
   event NewPlayer(address player);
   event Approval(string word);
   event Turn(address player, uint256 turn, string word, bool correct);
+  event GameStart(address cont);
 
   constructor(address creator, address _judge) {
     owner = creator;
@@ -56,6 +57,7 @@ contract WordGame {
     if (started || msg.sender != owner) return false;
 
     started = true;
+    emit GameStart(address(this));
     return true;
   }
 
