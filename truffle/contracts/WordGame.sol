@@ -18,9 +18,9 @@ contract WordGame {
   bool appNeeded;
 
   event NewPlayer(address player);
+  event GameStart(address cont);
   event Approval(string word);
   event Turn(address player, uint256 turn, string word, bool correct);
-  event GameStart(address cont);
 
   constructor(address creator, address _judge) {
     owner = creator;
@@ -69,8 +69,10 @@ contract WordGame {
     return players.length;
   }
 
-  function getPlayerIndex(address p) private view returns (uint256 i) {
-    while (i < players.length && players[i++] != p) {}
+  function getPlayerIndex(address p) public view returns (uint256) {
+    uint256 i;
+    while (i < players.length && players[i] != p) i++;
+    return i;
   }
 
   function joinGame() public returns (bool) {
