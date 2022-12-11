@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { gameAddress, deployerAddress, currentAddress, plays } from './stores'
+  import { gameAddress, deployerAddress, currentAddress } from './stores'
   import { ethers } from 'ethers'
   import Factory from '../../../truffle/build/contracts/WordGameFactory.json'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
   import GameScreen from './GameScreen.svelte'
-  import PlayersTab from './playersTab.svelte'
+  import PlayersTab from './PlayersTab.svelte'
 
   let joinButton = false
   let startButton = false
@@ -18,13 +18,8 @@
   let temp
   let flag = false
 
-  let contractAddress
-  deployerAddress.subscribe(value => {
-    contractAddress = value
-  })
-
   const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const instance = new ethers.Contract(contractAddress, Factory.abi, provider)
+  const instance = new ethers.Contract($deployerAddress, Factory.abi, provider)
   const signer = provider.getSigner()
 
   function toggleJoin() {
@@ -42,6 +37,7 @@
     temp = await singerinstance.newGame($deployerAddress)
 
     instance.on('NewGame', (game, event) => {
+      console.log(game, event)
       if (event.transactionHash === temp.hash) {
         startAddress = game
         gameAddress.update(_ => startAddress)

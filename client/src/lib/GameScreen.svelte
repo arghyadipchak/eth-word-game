@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import { gameAddress, currentAddress, plays } from './stores'
   import { ethers } from 'ethers'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
-  import PlayersTab from './playersTab.svelte'
+  import PlayersTab from './PlayersTab.svelte'
 
   const provider = new ethers.providers.Web3Provider(window.ethereum)
   const signer = provider.getSigner()

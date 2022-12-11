@@ -1,19 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { themeChange } from 'theme-change'
+  import { currentAddress, refresh } from './stores'
 
   onMount(() => {
     themeChange(false)
   })
 
   let metaMask = false
-  import { refresh, currentAddress } from './stores'
   let ethereum = window.ethereum
+  // let myAddress = ''
 
-  let myAddress = ''
-  currentAddress.subscribe(value => {
-    myAddress = value
-  })
+  // currentAddress.subscribe(value => {
+  //   myAddress = value
+  // })
 
   try {
     metaMask = ethereum === undefined || ethereum.isMetaMask === false

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { gameAddress, plays } from './stores'
   import { ethers } from 'ethers'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'

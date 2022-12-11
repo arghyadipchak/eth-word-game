@@ -1,28 +1,5 @@
-<script>
-  import { currentAddress, refresh, deployerAddress } from './stores'
-
-  let ethereum = window.ethereum
-  let currAdd
-  let deployAdd
-
-  if (ethereum) {
-    currentAddress.update(() => ethereum.selectedAddress || '')
-    ethereum.on('accountsChanged', () =>
-      currentAddress.update(() => ethereum.selectedAddress)
-    )
-  } else {
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && refresh) location.reload()
-    })
-  }
-
-  currentAddress.subscribe(value => {
-    currAdd = value
-  })
-
-  deployerAddress.subscribe(value => {
-    deployAdd = value
-  })
+<script lang="ts">
+  import { currentAddress, deployerAddress } from './stores'
 </script>
 
 <div class="navbar bg-base-100 fixed">
@@ -57,25 +34,28 @@
     </label>
 
     <div class="dropdown dropdown-end ">
-      <!-- svelte-ignore a11y-missing-attribute -->
       <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
       <img
         tabindex="0"
         class="btn btn-ghost mask mask-squircle"
         src="/eth.svg"
+        alt="Ethereum Logo"
       />
       <ul
         class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-60"
       >
         <li>
-          <!-- svelte-ignore a11y-missing-attribute -->
           <button class="btn-lg text-base"
-            >Account: {currAdd.slice(0, 5)}...{currAdd.slice(-4)}
+            >Account: {$currentAddress.slice(0, 5)}...{$currentAddress.slice(
+              -4
+            )}
           </button>
         </li>
         <li>
           <button class="btn-lg text-base"
-            >Deployer: {deployAdd.slice(0, 5)}...{deployAdd.slice(-4)}
+            >Deployer: {$deployerAddress.slice(0, 5)}...{$deployerAddress.slice(
+              -4
+            )}
           </button>
         </li>
       </ul>
