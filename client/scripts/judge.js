@@ -23,7 +23,7 @@ let wallet = new ethers.Wallet(
 )
 
 const factoryInst = new ethers.Contract(
-  '0x726dAFB3c671EA790b0EbC0a1bA35463c78FDc77',
+  '0x360B1B644c18080b862B7fa3762247558a7eDE7B',
   WGFactory.abi,
   wallet
 )

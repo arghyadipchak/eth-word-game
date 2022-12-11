@@ -1,43 +1,38 @@
 <script lang="ts">
-  import { gameAddress, currentAddress, plays } from './stores'
   import { ethers } from 'ethers'
-  import WordGame from '../../../truffle/build/contracts/WordGame.json'
+  import { gameAddress, currentAddress } from './stores'
   import PlayersTab from './PlayersTab.svelte'
+  import WordGame from '../../../truffle/build/contracts/WordGame.json'
 
   const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const signer = provider.getSigner()
-  const gameInstance = new ethers.Contract($gameAddress, WordGame.abi, provider)
-  const singerGameInstance = gameInstance.connect(signer)
+  const gameInst = new ethers.Contract($gameAddress, WordGame.abi, provider)
+  const signerGameInst = gameInst.connect(provider.getSigner())
 
-  let lastWord = 'abrakadabra'
-  let play = 0
+  let lastWord = gameInst.getLastWord()
   let myturn = false
-  let mypos = gameInstance.getPlayerIndex($currentAddress)
+  let mypos = gameInst.getPlayerIndex($currentAddress)
   let word = ''
-  let turn = [{ Player: 'initial', Turnno: 0, Word: 'abrakadabra', Err: true }]
-  let currentturn = turn.at(-1).Turnno
+  let turns = [{ no: 0, player: 'initial', word: lastWord, correct: true }]
+  let currentturn = turns.at(-1).no
 
-  singerGameInstance.on('GameStart', x => {
-    updatepos()
-  })
-
-  gameInstance.on('Turn', (player, turnnumber, word, correct) => {
-    turn.push({ Player: player, Turnno: turnnumber, Word: word, Err: correct })
+  gameInst.on('GameStart', updatepos)
+  gameInst.on('Turn', (player, turnno, word, correct) => {
+    turns.push({ no: turnno, player: player, word: word, correct: correct })
+    currentturn = turnno
     if (correct) {
       lastWord = word
     }
-    currentturn = turnnumber
   })
 
-  function addWord() {
+  function sendWord() {
     if (word !== '') {
-      singerGameInstance.sendWord(word)
+      signerGameInst.sendWord(word)
       word = ''
     }
   }
 
   async function updatepos() {
-    await gameInstance.getPlayerIndex($currentAddress).then(value => {
+    gameInst.getPlayerIndex($currentAddress).then(value => {
       mypos = value.toNumber()
     })
     console.log(mypos)
@@ -81,24 +76,17 @@
           />
         {/if}
       </div>
-      <button on:click={addWord} class="btn-primary btn m-2">
-        send word
-      </button>
-      <button on:click={updatepos} class="btn">yyyyy</button>
+      <button on:click={sendWord} class="btn-primary btn m-2"> SEND </button>
+      <button on:click={updatepos} class="btn"> UPDATE </button>
     </div>
   </div>
 </div>
 
 <style>
-  /* h1 {
-    margin: 0.8em 0;
-  } */
   span {
     display: inline-block;
     padding: 1em;
     text-align: center;
     border-radius: 0.5em;
-
-    /* margin: 0.8em 0; */
   }
 </style>

@@ -1,11 +1,12 @@
 <script lang="ts">
   import { currentAddress, deployerAddress } from './stores'
+  import { truncate } from './utils'
 </script>
 
 <div class="navbar bg-base-100 fixed">
   <div class="flex-1">
     <a class="btn btn-ghost normal-case text-xl text-primary" href="/"
-      >BlockChain Antakshari</a
+      >Ethereum Antakshari</a
     >
   </div>
   <div class="flex-none gap-2">
@@ -46,16 +47,12 @@
       >
         <li>
           <button class="btn-lg text-base"
-            >Account: {$currentAddress.slice(0, 5)}...{$currentAddress.slice(
-              -4
-            )}
+            >Account: {truncate($currentAddress)}
           </button>
         </li>
         <li>
           <button class="btn-lg text-base"
-            >Deployer: {$deployerAddress.slice(0, 5)}...{$deployerAddress.slice(
-              -4
-            )}
+            >Deployer: {truncate($deployerAddress)}
           </button>
         </li>
       </ul>

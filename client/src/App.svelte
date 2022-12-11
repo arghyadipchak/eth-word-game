@@ -1,11 +1,11 @@
 <script lang="ts">
   import MetaMask from './lib/MetaMask.svelte'
   import Navbar from './lib/Navbar.svelte'
-  import StartJoin from './lib/StartJoin.svelte'
+  import Game from './lib/Game.svelte'
 </script>
 
 <main>
   <MetaMask />
   <Navbar />
-  <StartJoin />
+  <Game />
 </main>

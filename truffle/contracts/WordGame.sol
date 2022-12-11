@@ -18,6 +18,7 @@ contract WordGame {
   bool appNeeded;
 
   event NewPlayer(address player);
+  event PlayerDied(address player);
   event GameStart(address cont);
   event Approval(string word);
   event Turn(address player, uint256 turn, string word, bool correct);
@@ -95,13 +96,21 @@ contract WordGame {
     uint256 i = getPlayerIndex(msg.sender);
     if (i == players.length) return false;
 
-    lives[msg.sender] = 0;
     if (turn == i) setNextTurn();
+    lives[msg.sender] = 0;
+    emit PlayerDied(msg.sender);
     return true;
   }
 
   function getLives() public view returns (uint256) {
     return lives[msg.sender];
+  }
+
+  function decLive(address p) private {
+    if (lives[p] > 0) {
+      lives[p]--;
+      if (lives[p] == 0) emit PlayerDied(p);
+    }
   }
 
   function getLastWord() public view returns (string memory) {
@@ -136,7 +145,7 @@ contract WordGame {
       return false;
 
     if (!isLastFirstSame(lastWord, newWord)) {
-      lives[msg.sender]--;
+      decLive(msg.sender);
       setNextTurn();
 
       emit Turn(msg.sender, turn, newWord, false);
@@ -155,7 +164,7 @@ contract WordGame {
     if (approved) {
       lastWord = appWord;
     } else {
-      lives[players[turn]]--;
+      decLive(players[turn]);
     }
     appNeeded = false;
     setNextTurn();

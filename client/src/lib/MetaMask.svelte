@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { themeChange } from 'theme-change'
-  import { currentAddress, refresh } from './stores'
+  import { currentAddress } from './stores'
 
   onMount(() => {
     themeChange(false)
@@ -9,11 +9,7 @@
 
   let metaMask = false
   let ethereum = window.ethereum
-  // let myAddress = ''
-
-  // currentAddress.subscribe(value => {
-  //   myAddress = value
-  // })
+  let refresh = false
 
   try {
     metaMask = ethereum === undefined || ethereum.isMetaMask === false
@@ -50,7 +46,7 @@
           href="https://metamask.io/download/"
           target="_blank"
           rel="noreferrer"
-          on:click={() => refresh.update(curr => true)}
+          on:click={() => (refresh = true)}
           class="btn bth-primary">Install MetaMask</a
         >
       </div>
