@@ -5,10 +5,8 @@ import './WordGame.sol';
 
 contract WordGameFactory {
   address[] games;
-  mapping(address => string) names;
 
   event NewGame(address game);
-  event NameChanged(address user, string name);
 
   function newGame(address judge) public returns (address newGameAdd) {
     newGameAdd = address(new WordGame(msg.sender, judge));
@@ -24,14 +22,5 @@ contract WordGameFactory {
 
   function getLastGame() public view returns (address) {
     return games[games.length - 1];
-  }
-
-  function setName(string memory name) public {
-    names[msg.sender] = name;
-    emit NameChanged(msg.sender, name);
-  }
-
-  function getName() public view returns (string memory) {
-    return names[msg.sender];
   }
 }

@@ -104,7 +104,7 @@ contract WordGame {
     return lives[msg.sender];
   }
 
-  function getWord() public view returns (string memory) {
+  function getLastWord() public view returns (string memory) {
     return lastWord;
   }
 
