@@ -12,6 +12,7 @@
   let ownerAddress = ''
   let startingGame = false
   let leavingGame = false
+  let AddressCopied = ' '
 
   onMount(
     async () => (ownerAddress = (await gameInstance.getOwner()).toLowerCase())
@@ -35,6 +36,11 @@
       })
       .catch(() => (leavingGame = false))
   }
+
+  function clickcopy() {
+    navigator.clipboard.writeText($gameAddress)
+    AddressCopied = 'Game Address copied! '
+  }
 </script>
 
 <div class="flex h-screen">
@@ -43,8 +49,12 @@
       class="grid grid-cols-1 gap-1 place-content-center h-10 justify-items-center"
     >
       <div>
-        <button class="btn btn-active">
-          GAME ADDRESS: {$gameAddress}
+        <label class="label" for="">
+          <span class="label-text-alt text-success">{AddressCopied}</span>
+        </label>
+        <button class="btn case normal-case text-lg" on:click={clickcopy}>
+          GAME ADDRESS : &nbsp;<span class="tracking-wider">{$gameAddress}</span
+          >
         </button>
       </div>
       <div>
