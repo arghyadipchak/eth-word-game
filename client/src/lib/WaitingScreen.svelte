@@ -11,6 +11,7 @@
 
   let ownerAddress = ''
   let startingGame = false
+  let leavingGame = false
 
   onMount(
     async () => (ownerAddress = (await gameInstance.getOwner()).toLowerCase())
@@ -24,7 +25,16 @@
       .catch(() => (startingGame = false))
   }
 
-  function leaveGame() {}
+  function leaveGame() {
+    leavingGame = true
+    signedGameInstance
+      .leaveGame()
+      .then(left => {
+        if (left) gameAddress.update(() => '')
+        else leavingGame = false
+      })
+      .catch(() => (leavingGame = false))
+  }
 </script>
 
 <div class="flex h-screen">
@@ -46,17 +56,23 @@
           <button
             on:click={startGame}
             class="btn btn-primary m-2 h-20 text-xl w-60"
-            disabled={gameInstance.started != $currentAddress}
+            disabled={ownerAddress != $currentAddress}
           >
             START
           </button>
         {/if}
-        <button
-          on:click={leaveGame}
-          class="btn btn-primary m-2 h-20 text-xl w-60"
-        >
-          LEAVE
-        </button>
+        {#if leavingGame}
+          <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
+            LEAVING GAME
+          </button>
+        {:else}
+          <button
+            on:click={leaveGame}
+            class="btn btn-primary m-2 h-20 text-xl w-60"
+          >
+            LEAVE
+          </button>
+        {/if}
       </div>
     </div>
   </div>
