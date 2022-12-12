@@ -22,7 +22,7 @@
   gameInstance.on('NewPlayer', playerAdd =>
     players.push({ address: playerAdd, alive: true })
   )
-  gameInstance.on('PlayerDied', playerAdd => {
+  gameInstance.on('PlayerDead', playerAdd => {
     for (let i = 0; i < players.length; i++)
       if (players[i].address == playerAdd) {
         players[i].alive = false

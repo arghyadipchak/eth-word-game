@@ -46,12 +46,12 @@
         class="mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-60"
       >
         <li>
-          <button class="btn-lg text-base"
+          <button class="text-base"
             >Account: {truncate($currentAddress)}
           </button>
         </li>
         <li>
-          <button class="btn-lg text-base"
+          <button class="text-base"
             >Deployer: {truncate($deployerAddress)}
           </button>
         </li>

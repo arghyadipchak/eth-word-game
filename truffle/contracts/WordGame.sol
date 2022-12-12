@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0+
 pragma solidity ^0.8.0;
 
-import './strings.sol';
+// import './strings.sol';
 
 contract WordGame {
-  using strings for *;
+  // using strings for *;
 
   bool started;
   bool ended;
@@ -18,7 +18,7 @@ contract WordGame {
   bool appNeeded;
 
   event NewPlayer(address player);
-  event PlayerDied(address player);
+  event PlayerDead(address player);
   event GameStart(address cont);
   event Approval(string word);
   event Turn(address player, uint256 turn, string word, bool correct);
@@ -33,25 +33,16 @@ contract WordGame {
     emit NewPlayer(creator);
   }
 
-  function getState()
-    public
-    view
-    returns (
-      address[] memory,
-      string memory,
-      bool,
-      uint256
-    )
-  {
-    return (players, lastWord, started, turn);
-  }
-
   function gameStarted() public view returns (bool) {
     return started;
   }
 
   function gameEnded() public view returns (bool) {
     return ended;
+  }
+
+  function getOwner() public view returns (address) {
+    return owner;
   }
 
   function startGame() public returns (bool) {
@@ -98,7 +89,7 @@ contract WordGame {
 
     if (turn == i) setNextTurn();
     lives[msg.sender] = 0;
-    emit PlayerDied(msg.sender);
+    emit PlayerDead(msg.sender);
     return true;
   }
 
@@ -109,7 +100,7 @@ contract WordGame {
   function decLive(address p) private {
     if (lives[p] > 0) {
       lives[p]--;
-      if (lives[p] == 0) emit PlayerDied(p);
+      if (lives[p] == 0) emit PlayerDead(p);
     }
   }
 
@@ -121,14 +112,22 @@ contract WordGame {
     return turn;
   }
 
+  function passTurn() public {
+    decLive(msg.sender);
+    setNextTurn();
+    emit Turn(msg.sender, turn, '', false);
+  }
+
   function isLastFirstSame(string memory w0, string memory w1)
     private
     pure
     returns (bool)
   {
-    strings.slice memory s = w1.toSlice();
-    s._len = 1;
-    return (w0.toSlice().endsWith(s));
+    // strings.slice memory s = w1.toSlice();
+    // s._len = 1;
+    // return (w0.toSlice().endsWith(s));
+    bytes memory tmp = bytes(w0);
+    return tmp[tmp.length - 1] == bytes(w1)[0];
   }
 
   function setNextTurn() private {

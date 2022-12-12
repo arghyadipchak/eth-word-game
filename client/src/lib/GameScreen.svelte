@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ethers } from 'ethers'
-  import { gameAddress, currentAddress } from './stores'
+  import { currentAddress, gameAddress } from './stores'
   import PlayersTab from './PlayersTab.svelte'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
 

@@ -3,8 +3,7 @@
     currentAddress,
     deployerAddress,
     gameAddress,
-    judgeAddress,
-    spectator
+    judgeAddress
   } from './stores'
   import { ethers } from 'ethers'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
@@ -42,7 +41,6 @@
   }
 
   async function joinGame() {
-    console.log('Bruh')
     if (joinAddress === '') {
       joinAlert = ''
       return
@@ -68,7 +66,7 @@
     ) {
       gameAddress.update(() => joinAddress)
     } else if (await gameInstance.gameStarted()) {
-      spectator.update(() => true)
+      joinAlert = 'Game Already Started!'
     } else if (await gameInstance.connect(provider.getSigner()).joinGame()) {
       gameAddress.update(() => joinAddress)
     } else {
@@ -97,7 +95,7 @@
         <div>
           <button
             on:click={joinGame}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+            class="btn btn-primary m-2 h-20 text-xl w-60"
           >
             JOIN
           </button>
@@ -110,7 +108,7 @@
         </div>
       {:else if createButton}
         <div>
-          <button class="btn bth-lg btn-primary m-2 h-20 text-xl w-60 loading">
+          <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
             CREATING GAME
           </button>
         </div>
@@ -118,7 +116,7 @@
         <div>
           <button
             on:click={createGame}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl w-60"
+            class="btn btn-primary m-2 h-20 text-xl w-60"
           >
             CREATE A GAME
           </button>
@@ -126,7 +124,7 @@
         <div>
           <button
             on:click={toggleJoin}
-            class="btn bth-lg btn-primary m-2 h-20 text-xl  w-60"
+            class="btn btn-primary m-2 h-20 text-xl  w-60"
           >
             JOIN A GAME
           </button>

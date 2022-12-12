@@ -19,8 +19,4 @@ contract WordGameFactory {
       if (games[i] == gameAdd) return true;
     return false;
   }
-
-  function getLastGame() public view returns (address) {
-    return games[games.length - 1];
-  }
 }
