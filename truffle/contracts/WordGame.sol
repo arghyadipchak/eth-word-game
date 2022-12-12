@@ -157,6 +157,10 @@ contract WordGame {
     return true;
   }
 
+  function getApproval() public view returns (bool, string memory) {
+    return (appNeeded, appWord);
+  }
+
   function setApproval(bool approved) public returns (bool) {
     if (msg.sender != judge || !appNeeded) return false;
 

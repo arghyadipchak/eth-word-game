@@ -1,26 +1,18 @@
 <script lang="ts">
+  import { ethers } from 'ethers'
   import {
     currentAddress,
-    deployerAddress,
     gameAddress,
-    judgeAddress
+    judgeAddress,
+    provider,
+    factInst
   } from './stores'
-  import { ethers } from 'ethers'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
-  import WGFactory from '../../../truffle/build/contracts/WordGameFactory.json'
 
   let createButton = false
   let joinButton = false
   let joinAddress = ''
   let joinAlert = ''
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const factoryInstance = new ethers.Contract(
-    $deployerAddress,
-    WGFactory.abi,
-    provider
-  )
-  const signedInstance = factoryInstance.connect(provider.getSigner())
 
   function toggleJoin() {
     joinButton = !joinButton
@@ -29,13 +21,14 @@
 
   function createGame() {
     createButton = true
-    let temp
-    signedInstance
-      .newGame(judgeAddress)
+    let temp = { hash: '' }
+    $factInst
+      .connect($provider.getSigner())
+      .newGame($judgeAddress)
       .then(game => (temp = game))
       .catch(() => (createButton = false))
 
-    factoryInstance.on('NewGame', (game, event) => {
+    $factInst.on('NewGame', (game, event) => {
       if (event.transactionHash == temp.hash) gameAddress.update(() => game)
     })
   }
@@ -47,27 +40,29 @@
     }
 
     try {
-      if (!(await factoryInstance.checkGame(joinAddress))) throw ''
+      if (!(await $factInst.checkGame(joinAddress))) throw ''
       joinAlert = ''
     } catch (_) {
       joinAlert = 'Invalid Game Address!'
       return
     }
 
-    const gameInstance = new ethers.Contract(
+    const tempGameInstance = new ethers.Contract(
       joinAddress,
       WordGame.abi,
-      provider
+      $provider
     )
+
     if (
-      (await gameInstance.getPlayerIndex($currentAddress)) <
-        (await gameInstance.playerCount()) &&
-      (await gameInstance.getLives()) != 0
+      (await tempGameInstance.getPlayerIndex($currentAddress)) <
+      (await tempGameInstance.playerCount())
     ) {
       gameAddress.update(() => joinAddress)
-    } else if (await gameInstance.gameStarted()) {
+    } else if (await tempGameInstance.gameStarted()) {
       joinAlert = 'Game Already Started!'
-    } else if (await gameInstance.connect(provider.getSigner()).joinGame()) {
+    } else if (
+      await tempGameInstance.connect($provider.getSigner()).joinGame()
+    ) {
       gameAddress.update(() => joinAddress)
     } else {
       joinAlert = 'Unable to Join Game!'

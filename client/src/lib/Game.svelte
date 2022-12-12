@@ -1,20 +1,23 @@
 <script lang="ts">
-  import { gameAddress } from './stores'
-  import { ethers } from 'ethers'
+  import { gameAddress, gameInst } from './stores'
   import StartJoin from './StartJoin.svelte'
   import GameScreen from './GameScreen.svelte'
   import WaitingScreen from './WaitingScreen.svelte'
-  import WordGame from '../../../truffle/build/contracts/WordGame.json'
 
   let gameStarted = false
 
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const gameInst = new ethers.Contract($gameAddress, WordGame.abi, provider)
-
-  gameInst.on('GameStart', gameAdd => (gameStarted = $gameAddress == gameAdd))
-
-  // Override
-  // gameAddress.update(() => '0x57a9FbE0a9D41119C0d9fDD0035EC9Da580b40ed')
+  gameInst.subscribe(async gameI => {
+    if ($gameAddress === '') gameStarted = false
+    else {
+      try {
+        gameStarted = await gameI.gameStarted()
+      } catch (_) {
+        gameStarted = false
+      }
+    }
+    if (!gameStarted)
+      gameI.on('GameStart', gameAdd => (gameStarted = $gameAddress == gameAdd))
+  })
 </script>
 
 {#if $gameAddress === ''}
@@ -22,5 +25,8 @@
 {:else if !gameStarted}
   <WaitingScreen />
 {:else}
-  <GameScreen />
+  <!-- <GameScreen /> -->
+  <script>
+    console.log('3')
+  </script>
 {/if}

@@ -47,12 +47,12 @@
       >
         <li>
           <button class="text-base"
-            >Account: {truncate($currentAddress)}
+            >Account &nbsp;&nbsp;: {truncate($currentAddress, 5, 4)}
           </button>
         </li>
         <li>
           <button class="text-base"
-            >Deployer: {truncate($deployerAddress)}
+            >Deployer : {truncate($deployerAddress, 5, 4)}
           </button>
         </li>
       </ul>

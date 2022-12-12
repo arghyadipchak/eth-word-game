@@ -1,35 +1,28 @@
 <script lang="ts">
-  import { ethers } from 'ethers'
-  import { onMount } from 'svelte'
-  import { gameAddress } from './stores'
-  import WordGame from '../../../truffle/build/contracts/WordGame.json'
-  import { truncate } from './utils'
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const gameInstance = new ethers.Contract($gameAddress, WordGame.abi, provider)
+  import { gameInst } from './stores'
 
   let players = []
   let alive = {}
 
-  onMount(async () => {
+  gameInst.subscribe(async gameI => {
     let tmp
     let tmpPlayers = []
     let tmpAlive = {}
-    for (let i = 0; i < (await gameInstance.playerCount()); i++) {
-      tmp = await gameInstance.playerList(i)
+    for (let i = 0; i < (await gameI.playerCount()); i++) {
+      tmp = await gameI.playerList(i)
       tmpPlayers.push(tmp[0])
       tmpAlive[tmp[0]] = tmp[1]
     }
     players = tmpPlayers
     alive = tmpAlive
-  })
 
-  gameInstance.on('NewPlayer', player => {
-    if (!(player in players)) players.push(player)
-    alive[player] = true
-  })
-  gameInstance.on('PlayerDead', player => {
-    alive[player] = false
+    gameI.on('NewPlayer', player => {
+      if (!(player in players)) players.push(player)
+      alive[player] = true
+    })
+    gameI.on('PlayerDead', player => {
+      alive[player] = false
+    })
   })
 </script>
 

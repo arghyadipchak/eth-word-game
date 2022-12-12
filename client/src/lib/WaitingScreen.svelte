@@ -1,45 +1,42 @@
 <script lang="ts">
-  import { ethers } from 'ethers'
-  import { onMount } from 'svelte'
-  import { currentAddress, gameAddress } from './stores'
+  import { currentAddress, gameAddress, gameInst, provider } from './stores'
   import PlayersTab from './PlayersTab.svelte'
-  import WordGame from '../../../truffle/build/contracts/WordGame.json'
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const gameInstance = new ethers.Contract($gameAddress, WordGame.abi, provider)
-  const signedGameInstance = gameInstance.connect(provider.getSigner())
 
   let ownerAddress = ''
   let startingGame = false
   let leavingGame = false
-  let AddressCopied = ' '
+  let addressCopied = ''
 
-  onMount(
-    async () => (ownerAddress = (await gameInstance.getOwner()).toLowerCase())
-  )
+  gameInst.subscribe(async gameI => {
+    ownerAddress = (await gameI.getOwner()).toLowerCase()
+    startingGame = false
+    leavingGame = false
+    addressCopied = ''
+  })
 
-  function startGame() {
+  async function startGame() {
     startingGame = true
-    signedGameInstance
-      .startGame()
-      .then(() => {})
-      .catch(() => (startingGame = false))
+    try {
+      await $gameInst.connect($provider).startGame()
+    } catch (_) {
+      startingGame = false
+    }
   }
 
-  function leaveGame() {
+  async function leaveGame() {
     leavingGame = true
-    signedGameInstance
-      .leaveGame()
-      .then(left => {
-        if (left) gameAddress.update(() => '')
-        else leavingGame = false
-      })
-      .catch(() => (leavingGame = false))
+    try {
+      if (await $gameInst.connect($provider).leaveGame()) {
+        gameAddress.update(() => '')
+        return
+      }
+    } catch (_) {}
+    leavingGame = false
   }
 
   function clickcopy() {
     navigator.clipboard.writeText($gameAddress)
-    AddressCopied = 'Game Address copied! '
+    addressCopied = 'Game Address copied!'
   }
 </script>
 
@@ -50,7 +47,8 @@
     >
       <div>
         <label class="label" for="">
-          <span class="label-text-alt text-success">{AddressCopied}</span>
+          <span class="label-text-alt text-success" />
+          <span class="label-text-alt text-success">{addressCopied}</span>
         </label>
         <button class="btn case normal-case text-lg" on:click={clickcopy}>
           GAME ADDRESS : &nbsp;<span class="tracking-wider">{$gameAddress}</span

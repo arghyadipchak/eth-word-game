@@ -1,31 +1,37 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { themeChange } from 'theme-change'
-  import { currentAddress } from './stores'
+  import { currentAddress, ethereum } from './stores'
+
+  let metaMask = false
+  let refresh = false
 
   onMount(() => {
     themeChange(false)
+    ethereum.update(() => window.ethereum)
+
+    try {
+      metaMask = $ethereum !== undefined && $ethereum.isMetaMask === true
+      $ethereum
+        .request({ method: 'eth_requestAccounts' })
+        .then(accs => currentAddress.update(() => accs[0] || ''))
+        .catch(() => {})
+
+      $ethereum.on('accountsChanged', accs => {
+        currentAddress.update(() => accs[0] || '')
+        ethereum.update(() => window.ethereum)
+      })
+      $ethereum.on('chainChanged', () => window.location.reload())
+      $ethereum.on('disconnect', () => currentAddress.update(() => ''))
+    } catch (_) {
+      document.addEventListener('visibilitychange', () => {
+        if (refresh && !document.hidden) window.location.reload()
+      })
+    }
   })
-
-  let metaMask = false
-  let ethereum = window.ethereum
-  let refresh = false
-
-  try {
-    metaMask = ethereum === undefined || ethereum.isMetaMask === false
-    ethereum
-      .request({ method: 'eth_requestAccounts' })
-      .then(accs => currentAddress.update(() => accs[0]))
-      .catch(() => {})
-    ethereum.on('accountsChanged', () => location.reload())
-  } catch (_) {
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && refresh) location.reload()
-    })
-  }
 </script>
 
-{#if metaMask}
+{#if !metaMask}
   <input
     type="checkbox"
     id="MetaMaskConnect"
