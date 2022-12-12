@@ -17,7 +17,7 @@
   async function startGame() {
     startingGame = true
     try {
-      await $gameInst.connect($provider).startGame()
+      await $gameInst.connect($provider.getSigner()).startGame()
     } catch (_) {
       startingGame = false
     }
@@ -26,7 +26,7 @@
   async function leaveGame() {
     leavingGame = true
     try {
-      if (await $gameInst.connect($provider).leaveGame()) {
+      if (await $gameInst.connect($provider.getSigner()).leaveGame()) {
         gameAddress.update(() => '')
         return
       }
@@ -64,7 +64,7 @@
           <button
             on:click={startGame}
             class="btn btn-primary m-2 h-20 text-xl w-60"
-            disabled={ownerAddress != $currentAddress}
+            disabled={ownerAddress != $currentAddress || leavingGame}
           >
             START
           </button>
@@ -77,6 +77,7 @@
           <button
             on:click={leaveGame}
             class="btn btn-primary m-2 h-20 text-xl w-60"
+            disabled={startingGame}
           >
             LEAVE
           </button>
