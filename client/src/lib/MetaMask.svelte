@@ -17,10 +17,7 @@
       .request({ method: 'eth_requestAccounts' })
       .then(accs => currentAddress.update(() => accs[0]))
       .catch(() => {})
-
-    ethereum.on('accountsChanged', accs =>
-      currentAddress.update(() => accs[0] || '')
-    )
+    ethereum.on('accountsChanged', () => location.reload())
   } catch (_) {
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && refresh) location.reload()
