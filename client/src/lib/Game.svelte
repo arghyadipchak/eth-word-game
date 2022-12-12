@@ -25,8 +25,5 @@
 {:else if !gameStarted}
   <WaitingScreen />
 {:else}
-  <!-- <GameScreen /> -->
-  <script>
-    console.log('3')
-  </script>
+  <GameScreen />
 {/if}

@@ -1,58 +1,61 @@
 <script lang="ts">
-  import { ethers } from 'ethers'
-  import { currentAddress, gameAddress } from './stores'
+  import { currentAddress, gameAddress, gameInst, provider } from './stores'
   import PlayersTab from './PlayersTab.svelte'
   import WordsTab from './WordsTab.svelte'
-  import WordGame from '../../../truffle/build/contracts/WordGame.json'
-  import { onMount } from 'svelte'
-
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const gameInstance = new ethers.Contract($gameAddress, WordGame.abi, provider)
-  const signedGameInstance = gameInstance.connect(provider.getSigner())
 
   let lives = 0
   let myIndex = 0
   let turn = 0
   let word = ''
   let wordAlert = ''
-  let sendingWord = false
   let waitingApp = false
+  let sendingWord = false
   let leavingGame = false
 
-  onMount(async () => {
-    lives = await gameInstance.getLives()
-    myIndex = await gameInstance.getPlayerIndex($currentAddress)
-    turn = await gameInstance.getTurn()
+  gameInst.subscribe(async gameI => {
+    try {
+      lives = await gameI.getLives()
+      myIndex = await gameI.getPlayerIndex($currentAddress)
+      turn = await gameI.getTurn()
 
-    if (turn == myIndex) [word, waitingApp] = await gameInstance.getApproval()
-    console.log(word)
+      if (turn == myIndex) [word, waitingApp] = await gameI.getApproval()
+    } catch (_) {
+      lives = 0
+      myIndex = -1
+      turn = 0
+      word = ''
+      waitingApp = false
+    }
+
+    wordAlert = ''
+    sendingWord = false
+    leavingGame = false
   })
 
-  function sendWord() {
+  async function sendWord() {
     if (word === '') return
-    sendingWord = true
 
-    signedGameInstance
-      .sendWord(word.toLocaleLowerCase())
-      .then(sent => {
-        if (sent) {
-          waitingApp = true
-          gameInstance.on('Turn', () => {})
-        }
-      })
-      .catch(() => {})
+    sendingWord = true
+    try {
+      if (
+        $gameInst.connect($provider.getSigner()).sendWord(word.toLowerCase())
+      ) {
+        waitingApp = true
+        $gameInst.on('Turn', () => {})
+      }
+    } catch (_) {}
     sendingWord = false
   }
 
-  function leaveGame() {
+  async function leaveGame() {
     leavingGame = true
-    signedGameInstance
-      .leaveGame()
-      .then(left => {
-        if (left) gameAddress.update(() => '')
-        else leavingGame = false
-      })
-      .catch(() => (leavingGame = false))
+    try {
+      if (await $gameInst.connect($provider).leaveGame()) {
+        gameAddress.update(() => '')
+        return
+      }
+    } catch (_) {}
+    leavingGame = false
   }
 </script>
 
