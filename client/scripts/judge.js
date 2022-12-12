@@ -17,13 +17,14 @@ function handleGame(game) {
 let provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:7545')
 await provider.ready
 
+const wallet =  new ethers.Wallet(
+  'afa83c99f80e15b04dff28faa71097c0d68507a7b0e84e8293b4041b44b6ae4c',
+  provider
+)
+
 const factoryInst = new ethers.Contract(
-  '0x8faeB2009FF74B5b2bA6876582a0E2a885bAdB43',
-  WGFactory.abi,
-  new ethers.Wallet(
-    'b473e7d69a685e58c83912f2f2f65d40037585ecb5fa5d2f427d7bb7a8644914',
-    provider
-  )
+  '0x78968635D38185418E0CADfbBfFc567aE85E69D0',
+  WGFactory.abi, wallet
 )
 await factoryInst.deployed()
 factoryInst.on('NewGame', handleGame)
