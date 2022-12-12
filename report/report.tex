@@ -2,6 +2,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage[body={6.0in,8.75in}]{geometry}
+\usepackage{dirtree}
 \graphicspath{ {./images/} }
 
 
@@ -80,53 +82,129 @@ After which they play the game by using our frontend and sending transactions vi
     player is declared the winner.
 \end{itemize}
 
-    \subsection{Development tools} 
-    \href{https://trufflesuite.com/}{\textit{The Truffle Suite}}:
-    Truffle advertises itself as "the most comprehensive suite of tools for smart
-    contract development". 
-    \paragraph{How it can be used}:
-    Truffle can be used as a development environment, testing framework and asset
-    pipeline for blockchains using the \emph{Ethereum Virtual Machine} (\textbf{EVM}).
-    It manages the entire workflow efficiently for any blockchain-based development.
-    Its key features include:
-    \begin{itemize}
-        \item Built-in smart contract compilation, linking, deployment and binary management.
-        \item Deployments and transactions through MetaMask to protect our mnemonic.
-        \item External script runner that executes scripts within a Truffle environment.
-    \end{itemize}
-    \paragraph{How we use it}:
-    Our backend is Truffle-based. We have used it for testing our software without having to use the actual Ethereum blockchain and spending actual gas on it.
-    
-    \href{https://trufflesuite.com/ganache/}{\textit{Ganache}}:
-    Ganache is a tool for producing "One-click blockchains". It is a personal blockchain for developing software for Ethereum or even Corda. 
-    \paragraph{How it can be used}:
-    Using Ganache enables:
-    \begin{itemize}
-        \item \verb|console.log| in Solidity
-        \item Forking any Ethereum network without waiting to sync
-        \item Ethereum JSON/RPC support
-        \item Impersonating any account without requiring any actual private keys
-        \item Listening for JSON-RPC 2.0 requests over HTTPS/WebSockets
-        \item Mining blocks instantly, on demand, or at an interval.
-    \end{itemize}
-    among other things.
-    
-    \paragraph{How we use it}:
-    Ganache has also been used for testing, by simulating players using fake private keys and addresses and observing how our code interacts with requests and events.
-    
-    %\end{enumerate}
+\subsection{Development tools} 
+
+\subsubsection{Truffle}
+
+\href{https://trufflesuite.com/}{\textit{The Truffle Suite}}:
+Truffle advertises itself as ``the most comprehensive suite of tools for smart
+contract development". 
+\paragraph{How it can be used}:
+Truffle can be used as a development environment, testing framework and asset
+pipeline for blockchains using the \emph{Ethereum Virtual Machine} (\textbf{EVM}).
+It manages the entire workflow efficiently for any blockchain-based development.
+Its key features include:
+\begin{itemize}
+    \item Built-in smart contract compilation, linking, deployment and binary management.
+    \item Deployments and transactions through MetaMask to protect our mnemonic.
+    \item External script runner that executes scripts within a Truffle environment.
+\end{itemize}
+\paragraph{How we use it}:
+Our backend is Truffle-based. We have used it for testing our software without having to use the actual Ethereum blockchain and spending actual gas on it.
+
+\href{https://trufflesuite.com/ganache/}{\textit{Ganache}}:
+Ganache is a tool for producing "One-click blockchains". It is a personal blockchain for developing software for Ethereum or even Corda. 
+\paragraph{How it can be used}:
+Using Ganache enables:
+\begin{itemize}
+    \item \verb|console.log| in Solidity
+    \item Forking any Ethereum network without waiting to sync
+    \item Ethereum JSON/RPC support
+    \item Impersonating any account without requiring any actual private keys
+    \item Listening for JSON-RPC 2.0 requests over HTTPS/WebSockets
+    \item Mining blocks instantly, on demand, or at an interval.
+\end{itemize}
+among other things.
+
+\paragraph{How we use it}:
+Ganache has also been used for testing, by simulating players using fake private keys and addresses and observing how our code interacts with requests and events.
+
+\subsubsection{User Interface tools} 
+\begin{itemize}
+    \item HTML 
+    \item Svelte: It is a front-end, open-source JavaScript framework  for building web applications. %Can we add something more?%
+\end{itemize}
+
 
 
 
 \subsection{Backend}
 
-1. Contract files
-2. 
+
+\subsubsection{Code}
+
+
+\dirtree{%
+.1 truffle.
+.2 contracts.
+.3 strings.sol.
+.3 WordGame.sol.
+.3 WordGameFactory.sol.
+.2 migrations.
+.3 1\_deploy\_contract.js.
+.2 test.
+.3 wordgame\_test.js.
+.3 wordgamefactory\_test.js.
+.2 truffle-config.js.
+% % .3 \hyperref[dir1-file1]{''file1''}.
+}
+
+\paragraph{Files}
+
+\begin{itemize}
+    \item strings.sol: 
+    \item WordGame.sol : 
+    \item WordGameFactory.sol : 
+    \item 1\_deploy\_contract.js : 
+    \item wordgame\_test.js :
+    \item wordgamefactory\_test.js :
+    \item truffle-config.js : 
+\end{itemize}
+
+
+\newpage
 
 \subsection{Frontend}
 
+The frontend allows the user to create games, join existing games, look at words already played. 
+% Have an image of the UI 
 
 
+
+
+
+\subsubsection{Code}
+
+
+
+\dirtree{%
+.1 client.
+.2 src.
+.3 lib.
+.4 Game.svelte.
+.4 GameScreen.svelte.
+.4 MetaMask.svelte.
+.4 Navbar.svelte.
+.4 PlayersTab.svelte.
+.4 StartJoin.svelte.
+.4 WaitingScreen.svelte.
+.4 WordTab.svelte.
+.3 App.svelte.
+% .3 \hyperref[dir1-file1]{''file1''}.
+}
+
+\paragraph{Files}
+
+\begin{itemize}
+    \item Game.svelte : 
+    \item GameScreen.svelte : Contains the html UI elements of the game screen, like text field to enter the word, button to submit the word etc, and the code for events related to these elements. 
+    \item MetaMask.svelte : Checks if the user has installed a MetaMask plugin and connects to the users MetaMask account
+    \item Navbar.svelte : Contains html for the navigation bar
+    \item PlayersTab.svelte : Shows the list of players who currently joined the game.
+    \item StartJoin.svelte : Contains buttons to Start and Join game, and their functionality. 
+    \item WaitingScreen.svelte : 
+    \item WordTab.svelte : 
+\end{itemize}
 
 
 \section {Challenges/Improvements}
