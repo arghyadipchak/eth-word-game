@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0+
 pragma solidity ^0.8.0;
 
-// import './strings.sol';
-
 contract WordGame {
-  // using strings for *;
-
   bool started;
-  bool ended;
   address owner;
   address judge;
+  address winner;
   address[] players;
   mapping(address => uint256) lives;
+  uint256 alive;
   uint256 turn;
   string lastWord;
   string appWord;
@@ -20,6 +17,7 @@ contract WordGame {
   event PlayerJoined(address player);
   event PlayerRejected(address player);
   event PlayerLeft(address player);
+  event PlayerWon(address player);
   event GameStarted(address cont);
   event Approval(string word);
   event Turn(
@@ -35,6 +33,7 @@ contract WordGame {
     judge = _judge;
     players.push(creator);
     lives[creator] = 3;
+    alive += 1;
     lastWord = 'abdakdabra';
 
     emit PlayerJoined(creator);
@@ -44,12 +43,16 @@ contract WordGame {
     return started;
   }
 
-  function gameEnded() public view returns (bool) {
-    return ended;
-  }
-
   function getOwner() public view returns (address) {
     return owner;
+  }
+
+  function getJudge() public view returns (address) {
+    return judge;
+  }
+
+  function getWinner() public view returns (address) {
+    return winner;
   }
 
   function playerCount() public view returns (uint256) {
@@ -68,6 +71,10 @@ contract WordGame {
 
   function getLives() public view returns (uint256) {
     return lives[msg.sender];
+  }
+
+  function getAlive() public view returns (uint256) {
+    return alive;
   }
 
   function getLastWord() public view returns (string memory) {
@@ -99,47 +106,62 @@ contract WordGame {
     while (lives[players[next]] == 0 && next != turn) {
       next = (next + 1) % players.length;
     }
-    if (next == turn) ended = true;
-    else turn = next;
+    if (next != turn) turn = next;
   }
 
-  function startGame() public {
+  function decAlive() private {
+    alive -= 1;
+    if (alive <= 1) {
+      winner = players[turn];
+      emit PlayerWon(winner);
+    }
+  }
+
+  function startGame() external {
     require(msg.sender == owner, 'Not Game Owner!');
 
     if (!started) {
       started = true;
-      emit GameStarted(address(this));
+      if (alive <= 1) {
+        winner = owner;
+        emit PlayerWon(winner);
+      } else emit GameStarted(address(this));
     }
   }
 
-  function joinGame() public {
+  function joinGame() external {
     uint256 i = getIndex();
     if (started && i == players.length) emit PlayerRejected(msg.sender);
     else {
-      if (!started) lives[msg.sender] = 3;
+      if (!started && lives[msg.sender] == 0) {
+        lives[msg.sender] = 3;
+        alive += 1;
+      }
       if (i == players.length) players.push(msg.sender);
       emit PlayerJoined(msg.sender);
     }
   }
 
-  function leaveGame() public {
+  function leaveGame() external {
     uint256 i = getIndex();
     if (i < players.length) {
       if (i == turn) setNextTurn();
       lives[msg.sender] = 0;
       emit PlayerLeft(msg.sender);
+      decAlive();
     }
   }
 
-  function passTurn() public {
+  function passTurn() external {
     lives[msg.sender] -= 1;
     setNextTurn();
     emit Turn(msg.sender, lives[msg.sender], turn, '', false);
+    if (lives[msg.sender] == 0) decAlive();
   }
 
-  function sendWord(string memory newWord) public {
-    require(started && !ended, 'Not Ongoing Game!');
-    require(msg.sender != players[turn] || appNeeded, 'Not Your Turn!');
+  function sendWord(string calldata newWord) external {
+    require(started && winner == address(0), 'Not Ongoing Game!');
+    require(msg.sender == players[turn] || !appNeeded, 'Not Your Turn!');
 
     if (isLastFirstSame(lastWord, newWord)) {
       appWord = newWord;
@@ -149,22 +171,24 @@ contract WordGame {
       lives[msg.sender] -= 1;
       setNextTurn();
       emit Turn(msg.sender, lives[msg.sender], turn, newWord, false);
+      if (lives[msg.sender] == 0) decAlive();
     }
   }
 
-  function setApproval(bool approved) public {
-    require(started && !ended, 'Not Ongoing Game!');
+  function setApproval(bool approved) external {
+    require(started && winner == address(0), 'Not Ongoing Game!');
     require(msg.sender == judge, 'Not Game Judge!');
 
     if (appNeeded) {
       if (approved) {
         lastWord = appWord;
       } else {
-        lives[msg.sender] -= 1;
+        lives[players[turn]] -= 1;
       }
       appNeeded = false;
       setNextTurn();
       emit Turn(players[turn], lives[msg.sender], turn, appWord, approved);
+      if (lives[players[turn]] == 0) decAlive();
     }
   }
 }

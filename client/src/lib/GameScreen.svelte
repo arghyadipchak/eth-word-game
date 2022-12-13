@@ -56,7 +56,11 @@
         lives = playerLives
         turn = nextTurn
         inputWord = ''
-        wordAlert = correct ? 'Good Turn' : 'Bad Turn'
+        wordAlert = correct
+          ? 'Good Turn'
+          : word != ''
+          ? 'Bad Turn'
+          : 'Passed Turn'
         waitingApp = false
         sendingWord = false
         passingTurn = false
