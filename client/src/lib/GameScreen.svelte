@@ -32,12 +32,12 @@
       if (turn == myIndex) {
         let tmp = await $gameInst.getApproval()
         waitingApp = tmp[0]
-        inputWord = tmp[1]
+        inputWord = waitingApp ? tmp[1] : ''
       } else {
         waitingApp = false
         inputWord = ''
       }
-    } catch (err) {
+    } catch (_) {
       myIndex = -1
       lives = 0
       turn = 0
@@ -54,7 +54,9 @@
     gameI.on('Turn', (player, playerLives, nextTurn, word, correct, event) => {
       if (
         event.transactionHash == tmpTx.hash ||
-        (waitingApp && player == $currentAddress && inputWord == word)
+        (waitingApp &&
+          player.toLowerCase() == $currentAddress &&
+          inputWord == word)
       ) {
         lives = playerLives
         inputWord = ''
@@ -84,6 +86,7 @@
       inputWord === '' ||
       lives == 0 ||
       myIndex != turn ||
+      waitingApp ||
       passingTurn ||
       leavingGame
     )
@@ -92,8 +95,7 @@
     sendingWord = true
     try {
       tmpTx = await $gameInst.sendWord(inputWord.toLowerCase())
-    } catch (err) {
-      console.log(err)
+    } catch (_) {
       sendingWord = false
     }
   }
@@ -177,6 +179,7 @@
             disabled={inputWord === '' ||
               lives == 0 ||
               myIndex != turn ||
+              waitingApp ||
               passingTurn ||
               leavingGame}
           >
