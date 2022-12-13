@@ -78,7 +78,7 @@ After which they play the game by using our frontend and sending transactions vi
     judge if it has not been used previously (thus we do not allow repitition of words)
     and also if it comes from the dictionary implemented in \verb|worddict.js|.
     \item[] \textbf{Lives}:
-    We have implemented a system of lives. All new players get 3 lives. A life is lost upon submission of an invalid word or passing a turn. Losing all lives results in elimination. 
+    We have implemented a system of lives. All new players get 3 lives. A life is lost upon submission of an invalid word. Losing all lives results in elimination. When a player passes a turn, they lose a life. 
     \item[] \textbf{Terminating/winning condition}: 
     Our terminating condition is through \textbf{last man standing}. When all but one
     player have been eliminated through the process described above, the remaining
@@ -137,23 +137,29 @@ We listen to these events to update the frontend.
 \paragraph{Defining events}:
 \begin{lstlisting}[language=Solidity]
       ...
-      event NewPlayer(address player);
-      event PlayerDead(address player);
-      event GameStart(address cont);
+      event PlayerJoined(address player);
+      event PlayerRejected(address player);
+      event PlayerLeft(address player);
+      event PlayerWon(address player);
+      event GameStarted(address cont);
       event Approval(string word);
-      event Turn(address player, uint256 turn, string word, bool correct);
+      event Turn(address player, uint256 playerLives, uint256 nextTurn, string word, bool correct);
       ...
 \end{lstlisting}
 
 \paragraph{Emitting events}:
   \begin{lstlisting}[language=Solidity]
     ...
-    function startGame() public returns (bool) {
-    if (started || msg.sender != owner) return false;
-    started = true;
-    emit GameStart(address(this));
-    return true;
+    function startGame() external {
+      require(msg.sender == owner, 'Not Game Owner!');
+      if (!started) {
+      started = true;
+      if (alive <= 1) {
+        winner = owner;
+        emit PlayerWon(winner);
+      } else emit GameStarted(address(this));
     }
+  }
     ...
 \end{lstlisting}
 
@@ -172,9 +178,6 @@ We listen to these events to update the frontend.
 .3 WordGameFactory.sol.
 .2 migrations.
 .3 1\_deploy\_contract.js.
-.2 test.
-.3 wordgame\_test.js.
-.3 wordgamefactory\_test.js.
 .2 truffle-config.js.
 % % .3 \hyperref[dir1-file1]{''file1''}.
 }
@@ -185,8 +188,6 @@ We listen to these events to update the frontend.
     \item \verb|WordGame.sol| : This source file contains the word-game contract which contains the functions that implement the game 
     \item \verb|WordGameFactory.sol| : This creates a \textbf{factory contract} for the Word Game contract class. A factory contract is used to deploy new smart contracts from a smart contract class
     \item \verb|1_deploy_contract.js| : This deploys the factory contract
-    \item \verb|wordgame_test.js| : This file contains test cases for the \verb|WordGame.sol| contract
-    \item \verb|wordgamefactory_test.js| : This file contains test cases for the \verb|WordGameFactory.sol| contract
     \item \verb|truffle-config.js| : This is the Truffle configuration file
 \end{itemize}
 
@@ -207,12 +208,12 @@ The frontend allows the user to create games, join existing games, and look at w
 .1 client.
 .2 src.
 .3 lib.
+.4 CreateJoin.svelte.
 .4 Game.svelte.
 .4 GameScreen.svelte.
 .4 MetaMask.svelte.
 .4 Navbar.svelte.
 .4 PlayersTab.svelte.
-.4 CreateJoin.svelte.
 .4 WaitingScreen.svelte.
 .4 WordsTab.svelte.
 .3 App.svelte.
