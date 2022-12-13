@@ -45,7 +45,7 @@
       inputWord = ''
     }
 
-    gameI.on('Approval', (word, event) => {
+    gameI.on('Approval', (_, event) => {
       if (event.transactionHash == tmpTx.hash) waitingApp = true
     })
     gameI.on('Turn', (player, playerLives, nextTurn, word, correct, event) => {
@@ -66,7 +66,7 @@
         passingTurn = false
       }
     })
-    gameI.on('PlayerLeft', (player, event) => {
+    gameI.on('PlayerLeft', (_, event) => {
       if (event.transactionHash == tmpTx.hash) gameAddress.update(() => '')
     })
   })

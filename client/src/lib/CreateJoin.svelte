@@ -54,12 +54,12 @@
       )
       tmpTx = await tmpInst.joinGame()
 
-      tmpInst.on('PlayerJoined', (player, event) => {
+      tmpInst.on('PlayerJoined', (_, event) => {
         if (event.transactionHash == tmpTx.hash) {
           gameAddress.update(() => joinAddress)
         }
       })
-      tmpInst.on('PlayerRejected', async (player, event) => {
+      tmpInst.on('PlayerRejected', async (_, event) => {
         if (event.transactionHash == tmpTx.hash) {
           joinAlert = (await tmpInst.gameStarted())
             ? 'Game Already Started!'

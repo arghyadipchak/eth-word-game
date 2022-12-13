@@ -20,7 +20,7 @@
       ownerAddress = ''
     }
 
-    gameI.on('PlayerLeft', (player, event) => {
+    gameI.on('PlayerLeft', (_, event) => {
       if (event.transactionHash == tmpTx.hash) {
         gameAddress.update(() => '')
       }
