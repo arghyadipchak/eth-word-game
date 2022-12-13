@@ -19,9 +19,7 @@
     createButton = true
 
     try {
-      tmpTx = await $factInst
-        .connect($provider.getSigner())
-        .newGame($judgeAddress)
+      tmpTx = await $factInst.newGame($judgeAddress)
     } catch (_) {
       createButton = false
     }
@@ -49,8 +47,12 @@
     let tmpTx = { hash: '' }
 
     try {
-      let tmpInst = new ethers.Contract(joinAddress, WordGame.abi, $provider)
-      tmpTx = await tmpInst.connect($provider.getSigner()).joinGame()
+      let tmpInst = new ethers.Contract(
+        joinAddress,
+        WordGame.abi,
+        $provider.getSigner()
+      )
+      tmpTx = await tmpInst.joinGame()
 
       tmpInst.on('PlayerJoined', (player, event) => {
         if (event.transactionHash == tmpTx.hash) {

@@ -25,25 +25,46 @@
     tmpTx = { hash: '' }
 
     try {
-      myIndex = await gameI.getIndex().toNumber()
-      lives = await gameI.getLives().toNumber()
-      turn = await gameI.getTurn().toNumber()
+      myIndex = (await gameI.getIndex()).toNumber()
+      lives = (await gameI.getLives()).toNumber()
+      turn = (await gameI.getTurn()).toNumber()
 
       if (turn == myIndex) {
-        let tmp = await gameI.getApproval()
+        let tmp = await $gameInst.getApproval()
         waitingApp = tmp[0]
         inputWord = tmp[1]
       } else {
         waitingApp = false
         inputWord = ''
       }
-    } catch (_) {
+    } catch (err) {
       myIndex = -1
       lives = 0
       turn = 0
       waitingApp = false
       inputWord = ''
     }
+
+    gameI.on('Approval', (word, event) => {
+      if (event.transactionHash == tmpTx.hash) waitingApp = true
+    })
+    gameI.on('Turn', (player, playerLives, nextTurn, word, correct, event) => {
+      if (
+        event.transactionHash == tmpTx.hash ||
+        (waitingApp && player == currentAddress && inputWord == word)
+      ) {
+        lives = playerLives
+        turn = nextTurn
+        inputWord = ''
+        wordAlert = correct ? 'Good Turn' : 'Bad Turn'
+        waitingApp = false
+        sendingWord = false
+        passingTurn = false
+      }
+    })
+    gameI.on('PlayerLeft', (player, event) => {
+      if (event.transactionHash == tmpTx.hash) gameAddress.update(() => '')
+    })
   })
 
   async function sendWord() {
@@ -58,10 +79,9 @@
 
     sendingWord = true
     try {
-      tmpTx = await $gameInst
-        .connect($provider.getSigner())
-        .sendWord(inputWord.toLowerCase())
-    } catch (_) {
+      tmpTx = await $gameInst.sendWord(inputWord.toLowerCase())
+    } catch (err) {
+      console.log(err)
       sendingWord = false
     }
   }
@@ -78,7 +98,7 @@
 
     passingTurn = true
     try {
-      tmpTx = await $gameInst.connect($provider.getSigner()).passTurn()
+      tmpTx = await $gameInst.passTurn()
     } catch (_) {
       passingTurn = false
     }
@@ -89,35 +109,11 @@
 
     leavingGame = true
     try {
-      tmpTx = await $gameInst.connect($provider.getSigner()).leaveGame()
+      tmpTx = await $gameInst.leaveGame()
     } catch (_) {
       leavingGame = false
     }
   }
-
-  $gameInst.on('Approval', (word, event) => {
-    if (event.transactionHash == tmpTx.hash) waitingApp = true
-  })
-  $gameInst.on(
-    'Turn',
-    (player, playerLives, nextTurn, word, correct, event) => {
-      if (
-        event.transactionHash == tmpTx.hash ||
-        (waitingApp && player == currentAddress && inputWord == word)
-      ) {
-        lives = playerLives.toNumber()
-        turn = nextTurn.toNumber()
-        inputWord = ''
-        wordAlert = correct ? 'Good Turn' : 'Bad Turn'
-        waitingApp = false
-        sendingWord = false
-        passingTurn = false
-      }
-    }
-  )
-  $gameInst.on('PlayerLeft', (player, event) => {
-    if (event.transactionHash == tmpTx.hash) gameAddress.update(() => '')
-  })
 
   function clickCopy() {
     navigator.clipboard.writeText($gameAddress)

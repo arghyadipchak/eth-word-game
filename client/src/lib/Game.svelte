@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { gameAddress, gameInst } from './stores'
+  import { currentAddress, gameAddress, gameInst } from './stores'
   import StartJoin from './StartJoin.svelte'
   import GameScreen from './GameScreen.svelte'
   import WaitingScreen from './WaitingScreen.svelte'
+
+  currentAddress.subscribe(() => gameAddress.update(() => ''))
 
   let gameStarted = false
 

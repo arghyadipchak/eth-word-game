@@ -17,9 +17,14 @@
     try {
       ownerAddress = (await gameI.getOwner()).toLowerCase()
     } catch (_) {
-      console.log('bro')
       ownerAddress = ''
     }
+
+    gameI.on('PlayerLeft', (player, event) => {
+      if (event.transactionHash == tmpTx.hash) {
+        gameAddress.update(() => '')
+      }
+    })
   })
 
   async function startGame() {
@@ -27,7 +32,7 @@
 
     startingGame = true
     try {
-      await $gameInst.connect($provider.getSigner()).startGame()
+      await $gameInst.startGame()
     } catch (_) {
       startingGame = false
     }
@@ -38,17 +43,11 @@
 
     leavingGame = true
     try {
-      tmpTx = await $gameInst.connect($provider.getSigner()).leaveGame()
+      tmpTx = await $gameInst.leaveGame()
     } catch (_) {
       leavingGame = false
     }
   }
-
-  $gameInst.on('PlayerLeft', (player, event) => {
-    if (event.transactionHash == tmpTx.hash) {
-      gameAddress.update(() => '')
-    }
-  })
 
   function clickCopy() {
     navigator.clipboard.writeText($gameAddress)

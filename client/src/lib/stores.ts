@@ -19,10 +19,10 @@ export const provider = derived(
 export const factInst = derived(
   [deployerAddress, provider],
   ([$deployerAddress, $provider]) =>
-    new ethers.Contract($deployerAddress, WGFactory.abi, $provider)
+    new ethers.Contract($deployerAddress, WGFactory.abi, $provider.getSigner())
 )
 export const gameInst = derived(
   [gameAddress, provider],
   ([$gameAddress, $provider]) =>
-    new ethers.Contract($gameAddress, WordGame.abi, $provider)
+    new ethers.Contract($gameAddress, WordGame.abi, $provider.getSigner())
 )
