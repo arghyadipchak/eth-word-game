@@ -9,16 +9,21 @@
     } catch (_) {
       words = []
     }
-    gameI.on('Turn', (player, turn, word, correct) => {
+    gameI.on('Turn', (player, playerLives, nextTurn, word, correct) => {
       if (correct) words = [word].concat(words.slice(0, 5))
     })
   })
 </script>
 
-<div class="m-auto h-2/3 overflow-x-hidden overflow-y-auto">
-  <div class="flex flex-col gap-1">
+<div class="m-auto h-2/3 overflow-x-hidden overflow-y-auto border-2 rounded-xl">
+  <div class="flex flex-col gap-1 items-center">
+    <span class="text-lg m-2 font-semibold">Words</span>
     {#each words as word}
-      <div class="btn btn-primary text-lg">{word}</div>
+      <div
+        class="bg-primary text-primary-content w-full p-2 font-semibold font-mono"
+      >
+        {word}
+      </div>
     {/each}
   </div>
 </div>

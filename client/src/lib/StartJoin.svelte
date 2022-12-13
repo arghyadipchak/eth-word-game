@@ -1,37 +1,35 @@
 <script lang="ts">
   import { ethers } from 'ethers'
-  import {
-    currentAddress,
-    gameAddress,
-    judgeAddress,
-    provider,
-    factInst
-  } from './stores'
+  import { gameAddress, judgeAddress, provider, factInst } from './stores'
   import WordGame from '../../../truffle/build/contracts/WordGame.json'
 
   let createButton = false
   let joinButton = false
+  let joiningGame = false
   let joinAddress = ''
   let joinAlert = ''
+  let tmpTx = { hash: '' }
 
   function toggleJoin() {
     joinButton = !joinButton
     joinAlert = ''
   }
 
-  function createGame() {
+  async function createGame() {
     createButton = true
-    let temp = { hash: '' }
-    $factInst
-      .connect($provider.getSigner())
-      .newGame($judgeAddress)
-      .then(game => (temp = game))
-      .catch(() => (createButton = false))
 
-    $factInst.on('NewGame', (game, event) => {
-      if (event.transactionHash == temp.hash) gameAddress.update(() => game)
-    })
+    try {
+      tmpTx = await $factInst
+        .connect($provider.getSigner())
+        .newGame($judgeAddress)
+    } catch (_) {
+      createButton = false
+    }
   }
+
+  $factInst.on('NewGame', (game, event) => {
+    if (event.transactionHash == tmpTx.hash) gameAddress.update(() => game)
+  })
 
   async function joinGame() {
     if (joinAddress === '') {
@@ -47,25 +45,29 @@
       return
     }
 
-    const tempGameInstance = new ethers.Contract(
-      joinAddress,
-      WordGame.abi,
-      $provider
-    )
+    joiningGame = true
+    let tmpTx = { hash: '' }
 
-    if (
-      (await tempGameInstance.getPlayerIndex($currentAddress)) <
-      (await tempGameInstance.playerCount())
-    ) {
-      gameAddress.update(() => joinAddress)
-    } else if (await tempGameInstance.gameStarted()) {
-      joinAlert = 'Game Already Started!'
-    } else if (
-      await tempGameInstance.connect($provider.getSigner()).joinGame()
-    ) {
-      gameAddress.update(() => joinAddress)
-    } else {
+    try {
+      let tmpInst = new ethers.Contract(joinAddress, WordGame.abi, $provider)
+      tmpTx = await tmpInst.connect($provider.getSigner()).joinGame()
+
+      tmpInst.on('PlayerJoined', (player, event) => {
+        if (event.transactionHash == tmpTx.hash) {
+          gameAddress.update(() => joinAddress)
+        }
+      })
+      tmpInst.on('PlayerRejected', async (player, event) => {
+        if (event.transactionHash == tmpTx.hash) {
+          joinAlert = (await tmpInst.gameStarted())
+            ? 'Game Already Started!'
+            : 'Unable to Join Game!'
+          joiningGame = false
+        }
+      })
+    } catch (err) {
       joinAlert = 'Unable to Join Game!'
+      joiningGame = false
     }
   }
 </script>
@@ -88,15 +90,21 @@
           </label>
         </div>
         <div>
-          <button
-            on:click={joinGame}
-            class="btn btn-primary m-2 h-20 text-xl w-60"
-          >
-            JOIN
-          </button>
+          {#if joiningGame}
+            <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
+              JOINING GAME
+            </button>
+          {:else}
+            <button
+              on:click={joinGame}
+              class="btn btn-primary m-2 h-20 text-xl w-60"
+            >
+              JOIN
+            </button>{/if}
           <button
             on:click={toggleJoin}
             class="btn btn-ghost btn-primary m-2 h-15 text-lg"
+            disabled={joiningGame}
           >
             BACK
           </button>

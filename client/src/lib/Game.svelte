@@ -14,9 +14,12 @@
       } catch (_) {
         gameStarted = false
       }
+      if (!gameStarted)
+        gameI.on(
+          'GameStarted',
+          gameAdd => (gameStarted = $gameAddress == gameAdd)
+        )
     }
-    if (!gameStarted)
-      gameI.on('GameStart', gameAdd => (gameStarted = $gameAddress == gameAdd))
   })
 </script>
 

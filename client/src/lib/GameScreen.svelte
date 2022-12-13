@@ -1,66 +1,127 @@
 <script lang="ts">
   import { currentAddress, gameAddress, gameInst, provider } from './stores'
+  import { truncate } from './utils'
   import PlayersTab from './PlayersTab.svelte'
   import WordsTab from './WordsTab.svelte'
-  import { truncate } from './utils'
 
+  let myIndex = -1
   let lives = 0
-  let myIndex = 0
   let turn = 0
-  let word = ''
+  let inputWord = ''
   let wordAlert = ''
   let waitingApp = false
   let sendingWord = false
+  let passingTurn = false
   let leavingGame = false
+  let addressCopied = false
+  let tmpTx = { hash: '' }
 
   gameInst.subscribe(async gameI => {
-    try {
-      lives = await gameI.getLives()
-      myIndex = await gameI.getPlayerIndex($currentAddress)
-      turn = await gameI.getTurn()
-
-      if (turn == myIndex) [word, waitingApp] = await gameI.getApproval()
-    } catch (_) {
-      lives = 0
-      myIndex = -1
-      turn = 0
-      word = ''
-      waitingApp = false
-    }
-
     wordAlert = ''
     sendingWord = false
+    passingTurn = false
     leavingGame = false
+    addressCopied = false
+    tmpTx = { hash: '' }
+
+    try {
+      myIndex = await gameI.getIndex().toNumber()
+      lives = await gameI.getLives().toNumber()
+      turn = await gameI.getTurn().toNumber()
+
+      if (turn == myIndex) {
+        let tmp = await gameI.getApproval()
+        waitingApp = tmp[0]
+        inputWord = tmp[1]
+      } else {
+        waitingApp = false
+        inputWord = ''
+      }
+    } catch (_) {
+      myIndex = -1
+      lives = 0
+      turn = 0
+      waitingApp = false
+      inputWord = ''
+    }
   })
 
   async function sendWord() {
-    if (word === '') return
+    if (
+      inputWord === '' ||
+      lives == 0 ||
+      myIndex != turn ||
+      passingTurn ||
+      leavingGame
+    )
+      return
 
     sendingWord = true
     try {
-      if (
-        $gameInst.connect($provider.getSigner()).sendWord(word.toLowerCase())
-      ) {
-        waitingApp = true
-        $gameInst.on('Turn', () => {})
-      }
-    } catch (_) {}
-    sendingWord = false
+      tmpTx = await $gameInst
+        .connect($provider.getSigner())
+        .sendWord(inputWord.toLowerCase())
+    } catch (_) {
+      sendingWord = false
+    }
+  }
+
+  async function passTurn() {
+    if (
+      lives == 0 ||
+      myIndex != turn ||
+      sendingWord ||
+      waitingApp ||
+      leavingGame
+    )
+      return
+
+    passingTurn = true
+    try {
+      tmpTx = await $gameInst.connect($provider.getSigner()).passTurn()
+    } catch (_) {
+      passingTurn = false
+    }
   }
 
   async function leaveGame() {
+    if (sendingWord || waitingApp || passingTurn) return
+
     leavingGame = true
     try {
-      if (await $gameInst.connect($provider).leaveGame()) {
-        gameAddress.update(() => '')
-        return
-      }
-    } catch (_) {}
-    leavingGame = false
+      tmpTx = await $gameInst.connect($provider.getSigner()).leaveGame()
+    } catch (_) {
+      leavingGame = false
+    }
   }
 
-  function clickcopy() {
+  $gameInst.on('Approval', (word, event) => {
+    if (event.transactionHash == tmpTx.hash) waitingApp = true
+  })
+  $gameInst.on(
+    'Turn',
+    (player, playerLives, nextTurn, word, correct, event) => {
+      if (
+        event.transactionHash == tmpTx.hash ||
+        (waitingApp && player == currentAddress && inputWord == word)
+      ) {
+        lives = playerLives.toNumber()
+        turn = nextTurn.toNumber()
+        inputWord = ''
+        wordAlert = correct ? 'Good Turn' : 'Bad Turn'
+        waitingApp = false
+        sendingWord = false
+        passingTurn = false
+      }
+    }
+  )
+  $gameInst.on('PlayerLeft', (player, event) => {
+    if (event.transactionHash == tmpTx.hash) gameAddress.update(() => '')
+  })
+
+  function clickCopy() {
     navigator.clipboard.writeText($gameAddress)
+    addressCopied = false
   }
 </script>
 
@@ -71,7 +132,7 @@
       class="grid grid-cols-1 gap-1 place-content-center h-10 justify-items-center"
     >
       <div class="mb-2">
-        <button class="btn case normal-case" on:click={clickcopy}>
+        <button class="btn case normal-case" on:click={clickCopy}>
           GAME ADDRESS : &nbsp;<span class="tracking-wider"
             >{truncate($gameAddress, 6, 4)}</span
           >
@@ -83,9 +144,10 @@
       <div class="form-control mt-2">
         <input
           type="text"
-          bind:value={word}
+          bind:value={inputWord}
           placeholder="Enter Word"
           class="input input-bordered input-primary input-lg max-w-prose w-[32rem] text-xl"
+          disabled={myIndex != turn}
         />
         <label class="label" for="">
           <span class="label-text-alt text-error">{wordAlert}</span>
@@ -104,31 +166,39 @@
           <button
             on:click={sendWord}
             class="btn btn-primary m-2 h-20 text-xl w-60"
-            disabled={leavingGame}
+            disabled={inputWord === '' ||
+              lives == 0 ||
+              myIndex != turn ||
+              passingTurn ||
+              leavingGame}
           >
             SEND
           </button>
         {/if}
-        {#if leavingGame}
-          <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
-            LEAVING GAME
-          </button>
-          <!-- {:else if passingTurn}
+        {#if passingTurn}
           <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
             PASSING TURN
-          </button> -->
+          </button>
+        {:else if leavingGame}
+          <button class="btn btn-error m-2 h-20 text-xl w-60 loading">
+            LEAVING GAME
+          </button>
         {:else}
           <button
-            on:click={leaveGame}
-            class="btn btn-primary h-20 text-xl w-30 rounded-l-lg"
-            disabled={sendingWord || waitingApp}
+            on:click={passTurn}
+            class="btn btn-primary m-2 h-20 text-xl w-30 rounded-l-lg"
+            disabled={lives == 0 ||
+              myIndex != turn ||
+              sendingWord ||
+              waitingApp ||
+              leavingGame}
           >
-            Pass
+            PASS
           </button>
           <button
             on:click={leaveGame}
-            class="btn btn-error h-20 text-xl w-30 rounded-r-lg"
-            disabled={sendingWord || waitingApp}
+            class="btn btn-error m-2 h-20 text-xl w-30 rounded-r-lg"
+            disabled={sendingWord || waitingApp || passingTurn}
           >
             LEAVE
           </button>

@@ -5,7 +5,7 @@ import WGFactory from '../../../truffle/build/contracts/WordGameFactory.json'
 
 export const ethereum = writable(window.ethereum)
 export const deployerAddress = readable(
-  '0x8faeB2009FF74B5b2bA6876582a0E2a885bAdB43'
+  '0x45B7f723c4C580Da2600C139e27D72011b569D5E'
 )
 export const judgeAddress = readable(
   '0x750ED35F3fEF98C1E08Ed603E1849591cC5E3f6e'

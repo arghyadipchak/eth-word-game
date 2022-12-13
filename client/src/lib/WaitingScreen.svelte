@@ -5,16 +5,26 @@
   let ownerAddress = ''
   let startingGame = false
   let leavingGame = false
-  let addressCopied = ''
+  let addressCopied = false
+  let tmpTx = { hash: '' }
 
   gameInst.subscribe(async gameI => {
-    ownerAddress = (await gameI.getOwner()).toLowerCase()
     startingGame = false
     leavingGame = false
-    addressCopied = ''
+    addressCopied = false
+    tmpTx = { hash: '' }
+
+    try {
+      ownerAddress = (await gameI.getOwner()).toLowerCase()
+    } catch (_) {
+      console.log('bro')
+      ownerAddress = ''
+    }
   })
 
   async function startGame() {
+    if (ownerAddress != $currentAddress || leavingGame) return
+
     startingGame = true
     try {
       await $gameInst.connect($provider.getSigner()).startGame()
@@ -24,19 +34,25 @@
   }
 
   async function leaveGame() {
+    if (startingGame) return
+
     leavingGame = true
     try {
-      if (await $gameInst.connect($provider.getSigner()).leaveGame()) {
-        gameAddress.update(() => '')
-        return
-      }
-    } catch (_) {}
-    leavingGame = false
+      tmpTx = await $gameInst.connect($provider.getSigner()).leaveGame()
+    } catch (_) {
+      leavingGame = false
+    }
   }
 
-  function clickcopy() {
+  $gameInst.on('PlayerLeft', (player, event) => {
+    if (event.transactionHash == tmpTx.hash) {
+      gameAddress.update(() => '')
+    }
+  })
+
+  function clickCopy() {
     navigator.clipboard.writeText($gameAddress)
-    addressCopied = 'Game Address copied!'
+    addressCopied = true
   }
 </script>
 
@@ -46,11 +62,14 @@
       class="grid grid-cols-1 gap-1 place-content-center h-10 justify-items-center"
     >
       <div>
-        <label class="label" for="">
-          <span class="label-text-alt text-success" />
-          <span class="label-text-alt text-success">{addressCopied}</span>
-        </label>
-        <button class="btn case normal-case text-lg" on:click={clickcopy}>
+        {#if addressCopied}
+          <label class="label" for="">
+            <span class="label-text-alt text-success" />
+            <span class="label-text-alt text-success">Game Address copied!</span
+            >
+          </label>
+        {/if}
+        <button class="btn case normal-case text-lg" on:click={clickCopy}>
           GAME ADDRESS : &nbsp;<span class="tracking-wider">{$gameAddress}</span
           >
         </button>

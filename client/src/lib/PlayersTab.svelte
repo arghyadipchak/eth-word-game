@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { gameInst } from './stores'
+  import { currentAddress, gameInst } from './stores'
 
   let players = []
   let alive = {}
@@ -16,11 +16,11 @@
     players = tmpPlayers
     alive = tmpAlive
 
-    gameI.on('NewPlayer', player => {
-      if (!(player in players)) players.push(player)
+    gameI.on('PlayerJoined', player => {
+      if (!players.includes(player)) players.push(player)
       alive[player] = true
     })
-    gameI.on('PlayerDead', player => {
+    gameI.on('PlayerLeft', player => {
       alive[player] = false
     })
   })
@@ -31,30 +31,24 @@
     <span class="text-lg m-2 font-semibold">Players</span>
     {#each players as player}
       {#if alive[player]}
-        <div class="player bg-primary text-primary-content">
-          {player}
-        </div>
+        {#if player.toLowerCase() == $currentAddress}
+          <div
+            class="bg-primary-focus text-primary-content w-full p-2 font-semibold font-mono"
+          >
+            {player}
+          </div>
+        {:else}<div
+            class="bg-primary text-primary-content w-full p-2 font-semibold font-mono"
+          >
+            {player}
+          </div>{/if}
       {:else}
-        <div class="btn btn-secondary normal-case ">
+        <div
+          class="bg-error text-error-content w-full p-2 font-semibold font-mono"
+        >
           {player}
         </div>
       {/if}
     {/each}
   </div>
 </div>
-
-<style>
-  .player {
-    display: inline-block;
-    padding: 1em;
-    text-align: center;
-    letter-spacing: 0.025em;
-    text-align: center;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    border-width: 4px;
-    border: hsl(var(--b1));
-  }
-</style>

@@ -17,11 +17,18 @@ contract WordGame {
   string appWord;
   bool appNeeded;
 
-  event NewPlayer(address player);
-  event PlayerDead(address player);
-  event GameStart(address cont);
+  event PlayerJoined(address player);
+  event PlayerRejected(address player);
+  event PlayerLeft(address player);
+  event GameStarted(address cont);
   event Approval(string word);
-  event Turn(address player, uint256 turn, string word, bool correct);
+  event Turn(
+    address player,
+    uint256 playerLives,
+    uint256 nextTurn,
+    string word,
+    bool correct
+  );
 
   constructor(address creator, address _judge) {
     owner = creator;
@@ -30,7 +37,7 @@ contract WordGame {
     lives[creator] = 3;
     lastWord = 'abdakdabra';
 
-    emit NewPlayer(creator);
+    emit PlayerJoined(creator);
   }
 
   function gameStarted() public view returns (bool) {
@@ -45,63 +52,22 @@ contract WordGame {
     return owner;
   }
 
-  function startGame() public returns (bool) {
-    if (started || msg.sender != owner) return false;
-
-    started = true;
-    emit GameStart(address(this));
-    return true;
+  function playerCount() public view returns (uint256) {
+    return players.length;
   }
 
   function playerList(uint256 i) public view returns (address, bool) {
     return (players[i], lives[players[i]] != 0);
   }
 
-  function playerCount() public view returns (uint256) {
-    return players.length;
-  }
-
-  function getPlayerIndex(address p) public view returns (uint256) {
+  function getIndex() public view returns (uint256) {
     uint256 i;
-    while (i < players.length && players[i] != p) i++;
+    while (i < players.length && players[i] != msg.sender) i++;
     return i;
-  }
-
-  function joinGame() public returns (bool) {
-    if (started) return false;
-
-    if (getPlayerIndex(msg.sender) < players.length) {
-      lives[msg.sender] = 5;
-      emit NewPlayer(msg.sender);
-      return true;
-    } else if (lives[msg.sender] == 0) {
-      players.push(msg.sender);
-      lives[msg.sender] = 5;
-      emit NewPlayer(msg.sender);
-      return true;
-    }
-    return false;
-  }
-
-  function leaveGame() public returns (bool) {
-    uint256 i = getPlayerIndex(msg.sender);
-    if (i == players.length) return false;
-
-    if (turn == i) setNextTurn();
-    lives[msg.sender] = 0;
-    emit PlayerDead(msg.sender);
-    return true;
   }
 
   function getLives() public view returns (uint256) {
     return lives[msg.sender];
-  }
-
-  function decLive(address p) private {
-    if (lives[p] > 0) {
-      lives[p]--;
-      if (lives[p] == 0) emit PlayerDead(p);
-    }
   }
 
   function getLastWord() public view returns (string memory) {
@@ -112,10 +78,8 @@ contract WordGame {
     return turn;
   }
 
-  function passTurn() public {
-    decLive(msg.sender);
-    setNextTurn();
-    emit Turn(msg.sender, turn, '', false);
+  function getApproval() public view returns (bool, string memory) {
+    return (appNeeded, appWord);
   }
 
   function isLastFirstSame(string memory w0, string memory w1)
@@ -139,40 +103,68 @@ contract WordGame {
     else turn = next;
   }
 
-  function sendWord(string memory newWord) public returns (bool) {
-    if (!started || ended || players[turn] != msg.sender || appNeeded)
-      return false;
+  function startGame() public {
+    require(msg.sender == owner, 'Not Game Owner!');
 
-    if (!isLastFirstSame(lastWord, newWord)) {
-      decLive(msg.sender);
-      setNextTurn();
-
-      emit Turn(msg.sender, turn, newWord, false);
-      return false;
+    if (!started) {
+      started = true;
+      emit GameStarted(address(this));
     }
-
-    appWord = newWord;
-    appNeeded = true;
-    emit Approval(newWord);
-    return true;
   }
 
-  function getApproval() public view returns (bool, string memory) {
-    return (appNeeded, appWord);
+  function joinGame() public {
+    uint256 i = getIndex();
+    if (started && i == players.length) emit PlayerRejected(msg.sender);
+    else {
+      if (!started) lives[msg.sender] = 3;
+      if (i == players.length) players.push(msg.sender);
+      emit PlayerJoined(msg.sender);
+    }
   }
 
-  function setApproval(bool approved) public returns (bool) {
-    if (msg.sender != judge || !appNeeded) return false;
-
-    if (approved) {
-      lastWord = appWord;
-    } else {
-      decLive(players[turn]);
+  function leaveGame() public {
+    uint256 i = getIndex();
+    if (i < players.length) {
+      if (i == turn) setNextTurn();
+      lives[msg.sender] = 0;
+      emit PlayerLeft(msg.sender);
     }
-    appNeeded = false;
+  }
+
+  function passTurn() public {
+    lives[msg.sender] -= 1;
     setNextTurn();
+    emit Turn(msg.sender, lives[msg.sender], turn, '', false);
+  }
 
-    emit Turn(players[turn], turn, appWord, approved);
-    return true;
+  function sendWord(string memory newWord) public {
+    require(started && !ended, 'Not Ongoing Game!');
+    require(msg.sender != players[turn] || appNeeded, 'Not Your Turn!');
+
+    if (isLastFirstSame(lastWord, newWord)) {
+      appWord = newWord;
+      appNeeded = true;
+      emit Approval(newWord);
+    } else {
+      lives[msg.sender] -= 1;
+      setNextTurn();
+      emit Turn(msg.sender, lives[msg.sender], turn, newWord, false);
+    }
+  }
+
+  function setApproval(bool approved) public {
+    require(started && !ended, 'Not Ongoing Game!');
+    require(msg.sender == judge, 'Not Game Judge!');
+
+    if (appNeeded) {
+      if (approved) {
+        lastWord = appWord;
+      } else {
+        lives[msg.sender] -= 1;
+      }
+      appNeeded = false;
+      setNextTurn();
+      emit Turn(players[turn], lives[msg.sender], turn, appWord, approved);
+    }
   }
 }
