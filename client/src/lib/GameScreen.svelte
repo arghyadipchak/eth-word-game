@@ -45,15 +45,18 @@
       inputWord = ''
     }
 
-    gameI.on('Approval', (_, event) => {
-      console.log('approval')
-      if (event.transactionHash == tmpTx.hash) {
+    gameI.on('Approval', (word, event) => {
+      if (
+        event.transactionHash == tmpTx.hash &&
+        sendingWord &&
+        inputWord == word
+      ) {
         waitingApp = true
         sendingWord = false
+        tmpTx = { hash: '' }
       }
     })
     gameI.on('Turn', (player, playerLives, nextTurn, word, correct, event) => {
-      console.log('turn')
       if (
         event.transactionHash == tmpTx.hash ||
         (player.toLowerCase() == $currentAddress && inputWord == word)
