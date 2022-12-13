@@ -10,7 +10,7 @@
       words = []
     }
     gameI.on('Turn', (player, turn, word, correct) => {
-      if (correct) words.push(word)
+      if (correct) words = [word].concat(words.slice(0, 5))
     })
   })
 </script>
@@ -18,7 +18,7 @@
 <div class="m-auto h-2/3 overflow-x-hidden overflow-y-auto">
   <div class="flex flex-col gap-1">
     {#each words as word}
-      <div class="btn btn-primary">{word}</div>
+      <div class="btn btn-primary text-lg">{word}</div>
     {/each}
   </div>
 </div>

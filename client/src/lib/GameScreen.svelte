@@ -2,6 +2,7 @@
   import { currentAddress, gameAddress, gameInst, provider } from './stores'
   import PlayersTab from './PlayersTab.svelte'
   import WordsTab from './WordsTab.svelte'
+  import { truncate } from './utils'
 
   let lives = 0
   let myIndex = 0
@@ -57,6 +58,10 @@
     } catch (_) {}
     leavingGame = false
   }
+
+  function clickcopy() {
+    navigator.clipboard.writeText($gameAddress)
+  }
 </script>
 
 <div class="flex h-screen">
@@ -65,15 +70,15 @@
     <div
       class="grid grid-cols-1 gap-1 place-content-center h-10 justify-items-center"
     >
-      <div class="mb-5">
-        <button class="btn btn-active">
-          GAME ADDRESS: {$gameAddress}
+      <div class="mb-2">
+        <button class="btn case normal-case" on:click={clickcopy}>
+          GAME ADDRESS : &nbsp;<span class="tracking-wider"
+            >{truncate($gameAddress, 6, 4)}</span
+          >
         </button>
       </div>
-      <div>
-        <button class="btn btn-outline btn-accent m-2 h-20 text-xl w-60">
-          LIVES LEFT: {lives}
-        </button>
+      <div class="btn btn-outline btn-accent text-accent mb-4">
+        LIVES LEFT : {lives}
       </div>
       <div class="form-control mt-2">
         <input
@@ -108,10 +113,21 @@
           <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
             LEAVING GAME
           </button>
+          <!-- {:else if passingTurn}
+          <button class="btn btn-primary m-2 h-20 text-xl w-60 loading">
+            PASSING TURN
+          </button> -->
         {:else}
           <button
             on:click={leaveGame}
-            class="btn btn-primary m-2 h-20 text-xl w-60"
+            class="btn btn-primary h-20 text-xl w-30 rounded-l-lg"
+            disabled={sendingWord || waitingApp}
+          >
+            Pass
+          </button>
+          <button
+            on:click={leaveGame}
+            class="btn btn-error h-20 text-xl w-30 rounded-r-lg"
             disabled={sendingWord || waitingApp}
           >
             LEAVE
