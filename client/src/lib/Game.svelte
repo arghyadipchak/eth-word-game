@@ -53,7 +53,7 @@
           {#if winner.toLowerCase() == $currentAddress}
             YOU WON!
           {:else}
-            WINNER : &nbsp;<span class="tracking-wider">{currentAddress}</span>
+            WINNER : &nbsp;<span class="tracking-wider">{$currentAddress}</span>
           {/if}
         </div>
       </div>

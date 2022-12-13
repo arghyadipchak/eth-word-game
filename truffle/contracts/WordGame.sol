@@ -33,7 +33,7 @@ contract WordGame {
     judge = _judge;
     players.push(creator);
     lives[creator] = 3;
-    alive += 1;
+    alive = 1;
     lastWord = 'abdakdabra';
 
     emit PlayerJoined(creator);
@@ -180,15 +180,16 @@ contract WordGame {
     require(msg.sender == judge, 'Not Game Judge!');
 
     if (appNeeded) {
+      address player = players[turn];
       if (approved) {
         lastWord = appWord;
       } else {
-        lives[players[turn]] -= 1;
+        lives[player] -= 1;
       }
       appNeeded = false;
       setNextTurn();
-      emit Turn(players[turn], lives[msg.sender], turn, appWord, approved);
-      if (lives[players[turn]] == 0) decAlive();
+      emit Turn(player, lives[player], turn, appWord, approved);
+      if (lives[player] == 0) decAlive();
     }
   }
 }
