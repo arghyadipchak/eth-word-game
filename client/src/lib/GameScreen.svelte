@@ -46,28 +46,36 @@
     }
 
     gameI.on('Approval', (_, event) => {
-      if (event.transactionHash == tmpTx.hash) waitingApp = true
+      if (event.transactionHash == tmpTx.hash) {
+        waitingApp = true
+        sendingWord = false
+      }
     })
     gameI.on('Turn', (player, playerLives, nextTurn, word, correct, event) => {
       if (
         event.transactionHash == tmpTx.hash ||
-        (waitingApp && player == currentAddress && inputWord == word)
+        (waitingApp && player == $currentAddress && inputWord == word)
       ) {
         lives = playerLives
-        turn = nextTurn
         inputWord = ''
         wordAlert = correct
           ? 'Good Turn'
-          : word != ''
-          ? 'Bad Turn'
-          : 'Passed Turn'
+          : word == ''
+          ? 'Passed Turn'
+          : 'Bad Turn'
         waitingApp = false
         sendingWord = false
         passingTurn = false
       }
+      turn = nextTurn
     })
     gameI.on('PlayerLeft', (_, event) => {
       if (event.transactionHash == tmpTx.hash) gameAddress.update(() => '')
+      else
+        gameI
+          .getTurn()
+          .then(v => (turn = v))
+          .catch(() => {})
     })
   })
 

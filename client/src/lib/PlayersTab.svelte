@@ -23,6 +23,9 @@
     gameI.on('PlayerLeft', player => {
       alive[player] = false
     })
+    gameI.on('Turn', (player, playerLives, nextTurn, word, correct, event) => {
+      if (playerLives == 0) alive[player] = false
+    })
   })
 </script>
 
