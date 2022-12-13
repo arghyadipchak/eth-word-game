@@ -19,7 +19,7 @@
     createButton = true
 
     try {
-      tmpTx = await $factInst.newGame($judgeAddress)
+      tmpTx = await $factInst.newGame(judgeAddress)
     } catch (_) {
       createButton = false
     }
