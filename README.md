@@ -14,13 +14,13 @@ This is the course project for the Introduction to Blockchains course at [CMI](h
 ## Getting Started
 
 1. Install [Truffle](https://trufflesuite.com/docs/truffle/how-to/install/)
-2. Install [Ganache](https://trufflesuite.com/docs/ganache/quickstart/) for a local auto-mining blockchain
-OR Use a Test Network for dev
+2. Install [Ganache](https://trufflesuite.com/docs/ganache/quickstart/) for a local auto-mining blockchain \
+OR Use a Test Network for dev \
 OR Use the Ethereum Mainnet
 3. Install [Node.js](https://nodejs.org/en/download/) and [Yarn v1](https://yarnpkg.com/getting-started/install)
 4. Clone the repository
 ```sh
-git clone https://github.com/arghyadipchak/craww
+git clone https://github.com/arghyadipchak/eth-word-game
 ```
 5. Navigate to the truffle directory
 6. Setup `truffle-config.js`
@@ -39,13 +39,13 @@ yarn install
 ```sh
 node judge.js
 ```
-* If you wish to use a different set of dictionary words, populate the `worddict.json` with a sorted list of your words
+*If you wish to use a different set of dictionary words, populate the `worddict.json` with a sorted list of your words* \
+
 13.  Serve the client
 ```sh
 yarn dev
 ```
-OR
-13.  Build the client
+OR Build the client
 ```sh
 yarn build
 ```
