@@ -6,7 +6,7 @@ w_k[w_k.len - 1] == w_{k-1}[0] and J determines if the word is new and valid. Th
 
 This is the course project for the Introduction to Blockchains course at [CMI](https://www.cmi.ac.in) by
 - [Arghyadip](https://github.com/arghyadipchak)
-- [Arunava](https://github.com/arungantait)
+- [Arunava](https://github.com/ArunGant8)
 - [Harsh](https://github.com/harsharora21)
 - [Namratha](https://github.com/NamrathaG)
 - [Paarth](https://github.com/Paarth314)
