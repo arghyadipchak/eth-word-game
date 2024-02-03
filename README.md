@@ -9,7 +9,7 @@ This is the course project for the Introduction to Blockchains course at [CMI](h
 - [Arunava](https://github.com/ArunGant8)
 - [Harsh](https://github.com/harsharora21)
 - [Namratha](https://github.com/NamrathaG)
-- [Paarth](https://github.com/Paarth314)
+- [Paarth](https://github.com/PaarthIyer)
 
 ## Getting Started
 
